@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Pengurusan Disiplin Asrama - TA'DIB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- LOGIN SCREEN -->
+        <div id="loginScreen" class="screen active">
+            <div class="login-card">
+                <div class="logo-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2>TA'DIB</h2>
+                <p class="subtitle">Sistem Pengurusan Disiplin Asrama</p>
+
+                <div id="loginError" class="error-msg">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText">Sila semak semula kelayakan.</span>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-id-card"></i> No. Matriks</label>
+                        <input type="text" id="username" placeholder="Contoh: 18DDT21F1001" autocomplete="username" required />
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Kata Laluan</label>
+                        <input type="password" id="password" placeholder="12345" required />
+                    </div>
+                    <button type="submit" class="btn-login" id="submitBtn">
+                        <i class="fas fa-sign-in-alt"></i> Log Masuk
+                    </button>
+                </form>
+                <p class="auth-switch"><a href="#" id="showResetPasswordLink"><i class="fas fa-key"></i> Lupa kata laluan?</a></p>
+                <p class="auth-switch staff-login-link"><a href="#" id="showStaffLoginLink"><i class="fas fa-user-tie"></i> Log masuk Warden / HEP</a></p>
+            </div>
+        </div>
+
+        <!-- PASSWORD RESET SCREEN -->
+        <div id="resetPasswordScreen" class="screen">
+            <div class="login-card">
+                <div class="logo-icon"><i class="fas fa-key"></i></div>
+                <h2>Reset Kata Laluan</h2>
+                <p class="subtitle">Masukkan no. matriks pelajar atau emel staf. Pautan reset akan dihantar ke emel akaun.</p>
+
+                <div id="resetPasswordError" class="error-msg">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="resetPasswordErrorText"></span>
+                </div>
+                <div id="resetPasswordSuccess" class="success-msg">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="resetPasswordSuccessText"></span>
+                </div>
+
+                <form id="resetPasswordForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-id-card"></i> No. Matriks / Emel</label>
+                        <input type="text" id="resetPasswordIdentity" placeholder="Contoh: 18DDT21F1001" autocomplete="username" required />
+                    </div>
+                    <button type="submit" class="btn-login"><i class="fas fa-paper-plane"></i> Hantar Pautan Reset</button>
+                </form>
+                <p class="auth-switch"><a href="#" id="showLoginFromResetLink"><i class="fas fa-arrow-left"></i> Kembali ke log masuk</a></p>
+            </div>
+        </div>
+
+        <!-- REQUIRED STUDENT PASSWORD CHANGE SCREEN -->
+        <div id="changePasswordScreen" class="screen">
+            <div class="login-card">
+                <div class="logo-icon"><i class="fas fa-key"></i></div>
+                <h2>Tukar Kata Laluan</h2>
+                <p class="subtitle">Anda perlu menukar kata laluan sebelum meneruskan.</p>
+
+                <div id="changePasswordError" class="error-msg">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="changePasswordErrorText"></span>
+                </div>
+                <div id="changePasswordSuccess" class="success-msg">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Kata laluan berjaya dikemas kini.</span>
+                </div>
+
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Kata Laluan Baharu</label>
+                        <input type="password" id="newPassword" minlength="6" autocomplete="new-password" required />
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Sahkan Kata Laluan Baharu</label>
+                        <input type="password" id="confirmNewPassword" minlength="6" autocomplete="new-password" required />
+                    </div>
+                    <button type="submit" class="btn-login"><i class="fas fa-save"></i> Simpan Kata Laluan</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- STUDENT SIGN-UP SCREEN -->
+        <div id="signupScreen" class="screen">
+            <div class="login-card">
+                <div class="logo-icon"><i class="fas fa-user-plus"></i></div>
+                <h2>Daftar Akaun Pelajar</h2>
+                <p class="subtitle">Sahkan nombor matriks anda untuk bermula.</p>
+
+                <div id="signupError" class="error-msg">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="signupErrorText"></span>
+                </div>
+                <div id="signupSuccess" class="success-msg">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Akaun berjaya dicipta. Sila log masuk.</span>
+                </div>
+
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-id-card"></i> No. Matriks</label>
+                        <input type="text" id="signupMatrix" placeholder="Contoh: 18DDT21F1001" autocomplete="username" required />
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Cipta Kata Laluan</label>
+                        <input type="password" id="signupPassword" minlength="6" autocomplete="new-password" required />
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Sahkan Kata Laluan</label>
+                        <input type="password" id="signupConfirmPassword" minlength="6" autocomplete="new-password" required />
+                    </div>
+                    <button type="submit" class="btn-login"><i class="fas fa-user-check"></i> Daftar Akaun</button>
+                </form>
+                <p class="auth-switch">Sudah mempunyai akaun? <a href="#" id="showLoginLink">Log masuk di sini</a></p>
+            </div>
+        </div>
+
+        <!-- WARDEN / HEP LOGIN SCREEN -->
+        <div id="staffLoginScreen" class="screen">
+            <div class="login-card">
+                <div class="logo-icon"><i class="fas fa-user-tie"></i></div>
+                <h2>Log Masuk Staf</h2>
+                <p class="subtitle">Akses khas untuk Warden dan HEP.</p>
+
+                <div id="staffLoginError" class="error-msg">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="staffErrorText">Sila semak semula kelayakan.</span>
+                </div>
+
+                <form id="staffLoginForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Emel Staf</label>
+                        <input type="email" id="staffEmail" placeholder="nama@tadib.com" autocomplete="username" required />
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Kata Laluan</label>
+                        <input type="password" id="staffPassword" placeholder="******" autocomplete="current-password" required />
+                    </div>
+                    <button type="submit" class="btn-login"><i class="fas fa-sign-in-alt"></i> Log Masuk</button>
+                </form>
+                <p class="auth-switch"><a href="#" id="showStudentLoginLink"><i class="fas fa-arrow-left"></i> Kembali ke log masuk pelajar</a></p>
+            </div>
+        </div>
+
+        <!-- DASHBOARD SCREEN -->
+        <div id="dashboardScreen" class="screen">
+            <div class="dashboard-wrapper">
+                <!-- SIDEBAR -->
+                <aside class="sidebar">
+                    <div class="logo">
+                        <i class="fas fa-shield-alt"></i>
+                        <h1>TA'DIB <span>·</span></h1>
+                    </div>
+
+                    <div class="user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <div>
+                            <div class="name" id="sidebarUserName">Pelajar</div>
+                            <div class="role" id="sidebarUserRole">Pelajar</div>
+                        </div>
+                    </div>
+
+                    <nav class="nav-menu" id="navMenu"></nav>
+                </aside>
+
+                <!-- MAIN CONTENT -->
+                <main class="main-content">
+                    <div class="page-header">
+                        <h2>
+                            <i class="fas fa-clipboard-list"></i>
+                            <span id="pageTitleText">Dashboard</span>
+                        </h2>
+                        <span class="sub">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span id="roleLabel">PELAJAR</span> · 2026
+                        </span>
+                    </div>
+
+                    <div id="contentPanels"></div>
+                </main>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FIREBASE MODULE SCRIPT -->
+    <script type="module" src="firebase.js"></script>
+</body>
+</html>

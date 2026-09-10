@@ -46,6 +46,8 @@ let reportsData = [];
 let allReportsData = null;
 const studentReportsCache = new Map();
 let isSigningUp = false;
+const STUDENT_BASE_PASSWORD = '123456';
+const STUDENT_PASSWORD_RESET_REQUESTS_COLLECTION = 'password_reset_requests';
 let dataLoaded = {
     students: false,
     reports: false
@@ -90,10 +92,239 @@ const resetPasswordError = document.getElementById('resetPasswordError');
 const resetPasswordErrorText = document.getElementById('resetPasswordErrorText');
 const resetPasswordSuccess = document.getElementById('resetPasswordSuccess');
 const resetPasswordSuccessText = document.getElementById('resetPasswordSuccessText');
+const firstTimeUserScreen = document.getElementById('firstTimeUserScreen');
+const firstTimeUserForm = document.getElementById('firstTimeUserForm');
+const firstTimeUserMatrixInput = document.getElementById('firstTimeUserMatrix');
+const firstTimeUserError = document.getElementById('firstTimeUserError');
+const firstTimeUserErrorText = document.getElementById('firstTimeUserErrorText');
+const firstTimeUserSuccess = document.getElementById('firstTimeUserSuccess');
+const firstTimeUserSuccessText = document.getElementById('firstTimeUserSuccessText');
 
-function matrixEmail(matrix) {
-    return `${matrix.toLowerCase()}@student.tadib.com`;
+function normalizeMatrix(matrix) {
+    return (matrix || '').toString().trim().replace(/\s+/g, '').toUpperCase();
 }
+
+async function getStudentPassword(matrix) {
+    const cleanMatrix = normalizeMatrix(matrix);
+    const userQuery = query(collection(db, 'users'), where('no_matriks', '==', cleanMatrix), limit(1));
+    const matches = await getDocs(userQuery);
+    if (!matches.empty) {
+        const userData = matches.docs[0].data();
+        return userData.password || STUDENT_BASE_PASSWORD;
+    }
+    return STUDENT_BASE_PASSWORD;
+}
+
+async function saveStudentPassword(matrix, password = STUDENT_BASE_PASSWORD, passwordChanged = false) {
+    const cleanMatrix = normalizeMatrix(matrix);
+    const userQuery = query(collection(db, 'users'), where('no_matriks', '==', cleanMatrix), limit(1));
+    const matches = await getDocs(userQuery);
+
+    if (!matches.empty) {
+        const userDoc = matches.docs[0];
+        await updateDoc(userDoc.ref, {
+            password,
+            passwordChanged,
+            updatedAt: new Date().toISOString()
+        });
+        return;
+    }
+
+    await setDoc(doc(db, 'users', cleanMatrix), {
+        no_matriks: cleanMatrix,
+        password,
+        passwordChanged,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    });
+}
+
+async function createStudentPasswordRequest(matrix) {
+    const cleanMatrix = normalizeMatrix(matrix);
+    const student = await getStudentByMatrixID(cleanMatrix);
+    if (!student) {
+        throw new Error('Pelajar tidak dijumpai.');
+    }
+
+    const requestDoc = {
+        no_matriks: cleanMatrix,
+        nama: student.nama || student.name || '',
+        status: 'pending',
+        requestedAt: new Date().toISOString(),
+        requestedBy: cleanMatrix,
+        resetBy: 'warden'
+    };
+
+    await addDoc(collection(db, STUDENT_PASSWORD_RESET_REQUESTS_COLLECTION), requestDoc);
+    return requestDoc;
+}
+
+async function approveStudentPasswordReset(requestId) {
+    const requestRef = doc(db, STUDENT_PASSWORD_RESET_REQUESTS_COLLECTION, requestId);
+    const requestSnap = await getDoc(requestRef);
+    if (!requestSnap.exists()) return;
+
+    const request = requestSnap.data();
+    const matrix = normalizeMatrix(request.no_matriks);
+
+    await saveStudentPassword(matrix, STUDENT_BASE_PASSWORD, false);
+
+    const requestUserQuery = query(collection(db, 'users'), where('no_matriks', '==', matrix), limit(1));
+    const userMatches = await getDocs(requestUserQuery);
+    if (!userMatches.empty) {
+        const userDoc = userMatches.docs[0];
+        await updateDoc(userDoc.ref, { passwordChanged: false });
+    }
+
+    await updateDoc(requestRef, {
+        status: 'approved',
+        approvedAt: new Date().toISOString(),
+        approvedBy: currentUserData?.nama || 'Warden'
+    });
+}
+
+async function getStudentPasswordResetRequests() {
+    const snapshot = await getDocs(collection(db, STUDENT_PASSWORD_RESET_REQUESTS_COLLECTION));
+    return snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+}
+
+async function signInWithMatrixOrEmail(identity, password) {
+    const matrix = normalizeMatrix(identity);
+    if (!matrix) {
+        throw new Error('Masukkan no. matriks.');
+    }
+
+    const student = await getStudentByMatrixID(matrix);
+    if (!student) {
+        throw new Error('No. matriks tidak dijumpai dalam pangkalan data pelajar.');
+    }
+
+    const userQuery = query(collection(db, 'users'), where('no_matriks', '==', matrix), limit(1));
+    const userMatches = await getDocs(userQuery);
+    const storedPassword = userMatches.empty
+        ? STUDENT_BASE_PASSWORD
+        : (userMatches.docs[0].data().password || STUDENT_BASE_PASSWORD);
+
+    const internalStudentEmail = `${matrix.toLowerCase()}@tadib.com`;
+    const passwordCandidates = [
+        password,
+        storedPassword,
+        STUDENT_BASE_PASSWORD
+    ].filter((value, index, arr) => value && arr.indexOf(value) === index);
+
+    let lastError = null;
+
+    for (const candidate of passwordCandidates) {
+        try {
+            await signInWithEmailAndPassword(auth, internalStudentEmail, candidate);
+            return;
+        } catch (err) {
+            lastError = err;
+            console.error('Student matrix sign-in failed with candidate:', candidate, err);
+
+            if (err?.code === 'auth/user-not-found') {
+                try {
+                    const credential = await createUserWithEmailAndPassword(auth, internalStudentEmail, STUDENT_BASE_PASSWORD);
+                    await setDoc(doc(db, 'users', credential.user.uid), {
+                        ...student,
+                        no_matriks: matrix,
+                        role: 'pelajar',
+                        password: STUDENT_BASE_PASSWORD,
+                        passwordChanged: false
+                    });
+                    return;
+                } catch (createErr) {
+                    console.error('Student first-user creation failed:', createErr);
+                    if (createErr?.code === 'auth/email-already-in-use') {
+                        try {
+                            await signInWithEmailAndPassword(auth, internalStudentEmail, STUDENT_BASE_PASSWORD);
+                            return;
+                        } catch {
+                            // Continue to the next password candidate.
+                        }
+                    } else {
+                        throw createErr;
+                    }
+                }
+            }
+
+            if (err?.code !== 'auth/wrong-password' && err?.code !== 'auth/user-not-found') {
+                throw err;
+            }
+        }
+    }
+
+    throw lastError || new Error('Log masuk gagal.');
+}
+
+async function createStudentAccount(matrix, password) {
+    const internalStudentEmail = `${normalizeMatrix(matrix).toLowerCase()}@tadib.com`;
+    try {
+        return await createUserWithEmailAndPassword(auth, internalStudentEmail, password);
+    } catch (err) {
+        if (err?.code === 'auth/email-already-in-use') {
+            throw err;
+        }
+        throw err;
+    }
+}
+
+async function createFirstTimeStudentPage(matrix) {
+    const cleanMatrix = normalizeMatrix(matrix);
+    const student = await getStudentByMatrixID(cleanMatrix);
+    if (!student) {
+        throw Object.assign(new Error('Pelajar tidak dijumpai.'), { code: 'student/not-found' });
+    }
+
+    const userQuery = query(collection(db, 'users'), where('no_matriks', '==', cleanMatrix), limit(1));
+    const userMatches = await getDocs(userQuery);
+    if (!userMatches.empty) {
+        throw Object.assign(new Error('Pelajar sudah mempunyai halaman akaun.'), { code: 'user-page-already-exists' });
+    }
+
+    const internalStudentEmail = `${cleanMatrix.toLowerCase()}@tadib.com`;
+    const credential = await createUserWithEmailAndPassword(auth, internalStudentEmail, STUDENT_BASE_PASSWORD);
+    await setDoc(doc(db, 'users', credential.user.uid), {
+        ...student,
+        no_matriks: cleanMatrix,
+        role: 'pelajar',
+        password: STUDENT_BASE_PASSWORD,
+        passwordChanged: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    });
+
+    await signOut(auth);
+    return credential.user;
+}
+
+firstTimeUserForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    firstTimeUserError?.classList.remove('show');
+    firstTimeUserSuccess?.classList.remove('show');
+
+    try {
+        const matrix = normalizeMatrix(firstTimeUserMatrixInput.value);
+        if (!matrix) {
+            throw Object.assign(new Error('Masukkan no. matriks.'), { code: 'missing-matrix' });
+        }
+
+        await createFirstTimeStudentPage(matrix);
+        firstTimeUserSuccessText.textContent = 'Halaman pelajar telah dicipta. Sila log masuk dengan nombor matriks anda.';
+        firstTimeUserSuccess?.classList.add('show');
+        firstTimeUserForm.reset();
+        showScreen('loginScreen');
+    } catch (err) {
+        console.error('First-time user setup failed:', err);
+        const message = err?.code === 'student/not-found'
+            ? 'No. matriks tidak dijumpai dalam pangkalan data pelajar.'
+            : err?.code === 'user-page-already-exists'
+                ? 'Pelajar sudah mempunyai halaman akaun. Sila log masuk dengan nombor matriks anda.'
+                : 'Pendaftaran pelajar baru gagal. Sila cuba lagi.';
+        firstTimeUserErrorText.textContent = message;
+        firstTimeUserError?.classList.add('show');
+    }
+});
 
 function showAuthError(element, textElement, message) {
     textElement.textContent = message;
@@ -126,6 +357,23 @@ document.getElementById('showResetPasswordLink')?.addEventListener('click', (eve
     resetPasswordError?.classList.remove('show');
     resetPasswordSuccess?.classList.remove('show');
     showScreen('resetPasswordScreen');
+});
+
+document.getElementById('showFirstTimeUserLink')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    loginError?.classList.remove('show');
+    firstTimeUserError?.classList.remove('show');
+    firstTimeUserSuccess?.classList.remove('show');
+    firstTimeUserForm?.reset();
+    showScreen('firstTimeUserScreen');
+});
+
+document.getElementById('showLoginFromFirstTimeUserLink')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    firstTimeUserError?.classList.remove('show');
+    firstTimeUserSuccess?.classList.remove('show');
+    firstTimeUserForm?.reset();
+    showScreen('loginScreen');
 });
 
 document.getElementById('showLoginFromResetLink')?.addEventListener('click', (event) => {
@@ -215,12 +463,10 @@ function showDashboard() {
 loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const identity = usernameInput.value.trim();
-    const matrix = identity.toUpperCase();
-    const email = identity.includes('@') ? identity : matrixEmail(matrix);
     const password = passwordInput.value.trim();
 
     try {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithMatrixOrEmail(identity, password);
         loginError.classList.remove('show');
     } catch (err) {
         console.error("Login failed:", err);
@@ -256,7 +502,7 @@ async function sendAccountPasswordReset(identity) {
         return value.toLowerCase();
     }
 
-    const matrix = value.toUpperCase();
+    const matrix = normalizeMatrix(value);
     const student = await getStudentByMatrixID(matrix);
     if (!student) {
         const error = new Error('Pelajar tidak dijumpai.');
@@ -264,7 +510,7 @@ async function sendAccountPasswordReset(identity) {
         throw error;
     }
 
-    const email = matrixEmail(matrix);
+    const email = `${matrix.toLowerCase()}@tadib.com`;
     await sendPasswordResetEmail(auth, email);
     return email;
 }
@@ -275,17 +521,21 @@ resetPasswordForm?.addEventListener('submit', async (event) => {
     resetPasswordSuccess?.classList.remove('show');
 
     try {
-        const email = await sendAccountPasswordReset(resetPasswordIdentityInput.value);
-        resetPasswordSuccessText.textContent = `Pautan reset telah dihantar ke ${email}. Semak peti masuk dan folder spam.`;
+        const matrix = normalizeMatrix(resetPasswordIdentityInput.value);
+        const student = await getStudentByMatrixID(matrix);
+        if (!student) {
+            throw Object.assign(new Error('Pelajar tidak dijumpai.'), { code: 'student/not-found' });
+        }
+
+        await createStudentPasswordRequest(matrix);
+        resetPasswordSuccessText.textContent = 'Permintaan reset kata laluan telah dihantar kepada warden untuk kelulusan.';
         resetPasswordSuccess?.classList.add('show');
         resetPasswordForm.reset();
     } catch (err) {
         console.error('Password reset request failed:', err);
         const message = err.code === 'student/not-found'
             ? 'No. matriks tidak dijumpai.'
-            : err.code === 'auth/user-not-found'
-                ? 'Akaun tidak dijumpai.'
-                : 'Reset gagal. Pastikan emel atau no. matriks betul dan cuba lagi.';
+            : 'Reset gagal. Pastikan no. matriks pelajar betul dan cuba lagi.';
         showAuthError(resetPasswordError, resetPasswordErrorText, message);
     }
 });
@@ -295,9 +545,9 @@ signupForm?.addEventListener('submit', async (e) => {
     signupError?.classList.remove('show');
     document.getElementById('signupSuccess')?.classList.remove('show');
 
-    const matrix = signupMatrixInput.value.trim().toUpperCase();
-    const password = signupPasswordInput.value;
-    const confirmPassword = signupConfirmPasswordInput.value;
+    const matrix = normalizeMatrix(signupMatrixInput.value);
+    const password = (signupPasswordInput.value || STUDENT_BASE_PASSWORD).trim();
+    const confirmPassword = (signupConfirmPasswordInput.value || STUDENT_BASE_PASSWORD).trim();
 
     if (password !== confirmPassword) {
         showAuthError(signupError, signupErrorText, 'Kata laluan tidak sepadan.');
@@ -311,14 +561,20 @@ signupForm?.addEventListener('submit', async (e) => {
             return;
         }
 
+        if (!password) {
+            showAuthError(signupError, signupErrorText, 'Kata laluan pelajar gagal ditentukan.');
+            return;
+        }
+
         isSigningUp = true;
-        const credential = await createUserWithEmailAndPassword(auth, matrixEmail(matrix), password);
+        const credential = await createStudentAccount(matrix, password);
         await setDoc(doc(db, 'users', credential.user.uid), {
             ...student,
             no_matriks: matrix,
             role: 'pelajar',
             passwordChanged: true
         });
+        await saveStudentPassword(matrix, password, true);
         await signOut(auth);
         isSigningUp = false;
         signupForm.reset();
@@ -352,6 +608,7 @@ changePasswordForm?.addEventListener('submit', async (event) => {
     try {
         await updatePassword(auth.currentUser, newPassword);
         await updateDoc(doc(db, 'users', auth.currentUser.uid), { passwordChanged: true });
+        await saveStudentPassword(currentUserData?.no_matriks || auth.currentUser?.email, newPassword, true);
         currentUserData.passwordChanged = true;
         changePasswordForm.reset();
         showDashboard();
@@ -1270,33 +1527,46 @@ async function loadPanelContent(panelName, targetMatriks = null) {
     } else if (panelName === "resetPassword") {
         if (pageTitleText) pageTitleText.textContent = "Reset Kata Laluan";
 
+        const requests = await getStudentPasswordResetRequests();
+        const rows = requests.length
+            ? requests.map(req => `
+                <tr>
+                    <td><strong>${req.no_matriks || '-'}</strong></td>
+                    <td>${req.nama || '-'}</td>
+                    <td>${req.status || 'pending'}</td>
+                    <td>${req.requestedAt ? new Date(req.requestedAt).toLocaleString('ms-MY') : '-'}</td>
+                    <td>
+                        ${req.status === 'pending' ? `<button type="button" class="btn btn-success approve-reset-btn" data-request-id="${req.id}"><i class="fas fa-check"></i> Approved</button>` : `<span class="badge">Approved</span>`}
+                    </td>
+                </tr>
+            `).join('')
+            : `<tr><td colspan="5">Tiada permintaan reset kata laluan pelajar.</td></tr>`;
+
         contentPanel.innerHTML = `
             <div class="card-box">
                 <h3>Reset Kata Laluan Pelajar</h3>
-                <p style="margin: 10px 0 18px; color: #6d5a88;">Masukkan nombor matriks untuk menghantar pautan reset ke emel akaun pelajar.</p>
-                <form id="staffResetPasswordForm" style="display: flex; gap: 12px; align-items: end; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 240px;">
-                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">No. Matriks Pelajar</label>
-                        <input type="text" id="staffResetPasswordMatrix" class="form-control" placeholder="Cth: 18DDT21F1001" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Hantar Reset</button>
-                </form>
-                <div id="staffResetPasswordMessage" style="margin-top: 16px;"></div>
+                <p style="margin: 10px 0 18px; color: #6d5a88;">Senarai permintaan reset kata laluan pelajar untuk kelulusan warden.</p>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>No. Matriks</th>
+                            <th>Nama</th>
+                            <th>Status</th>
+                            <th>Tarikh</th>
+                            <th>Tindakan</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
             </div>
         `;
 
-        document.getElementById('staffResetPasswordForm')?.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const matrix = document.getElementById('staffResetPasswordMatrix')?.value.trim().toUpperCase();
-            const message = document.getElementById('staffResetPasswordMessage');
-
-            try {
-                await sendAccountPasswordReset(matrix);
-                if (message) message.innerHTML = '<div class="success-msg show">Pautan reset telah dihantar ke emel akaun pelajar.</div>';
-            } catch (err) {
-                console.error('Student password reset failed:', err);
-                if (message) message.innerHTML = `<div class="error-msg show">${err.code === 'student/not-found' ? 'Pelajar tidak dijumpai.' : 'Reset gagal. Pastikan akaun pelajar telah didaftarkan.'}</div>`;
-            }
+        contentPanel.querySelectorAll('.approve-reset-btn')?.forEach(button => {
+            button.addEventListener('click', async () => {
+                const requestId = button.dataset.requestId;
+                await approveStudentPasswordReset(requestId);
+                loadPanelContent('resetPassword');
+            });
         });
 
     // 4. DAFTAR KES BAHARU (TAJUK DIKEMAS KINI & LAMPIRAN GAMBAR)

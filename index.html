@@ -38,8 +38,36 @@
                         <i class="fas fa-sign-in-alt"></i> Log Masuk
                     </button>
                 </form>
+                <p class="auth-switch"><a href="#" id="showFirstTimeUserLink"><i class="fas fa-user-plus"></i> Pengguna kali pertama?</a></p>
                 <p class="auth-switch"><a href="#" id="showResetPasswordLink"><i class="fas fa-key"></i> Lupa kata laluan?</a></p>
                 <p class="auth-switch staff-login-link"><a href="#" id="showStaffLoginLink"><i class="fas fa-user-tie"></i> Log masuk Warden / HEP</a></p>
+            </div>
+        </div>
+
+        <!-- FIRST-TIME USER MATRIX SCREEN -->
+        <div id="firstTimeUserScreen" class="screen">
+            <div class="login-card">
+                <div class="logo-icon"><i class="fas fa-user-plus"></i></div>
+                <h2>Pelajar Baru</h2>
+                <p class="subtitle">Masukkan no. matriks anda untuk membuka halaman pengguna pertama.</p>
+
+                <div id="firstTimeUserError" class="error-msg">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="firstTimeUserErrorText"></span>
+                </div>
+                <div id="firstTimeUserSuccess" class="success-msg">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="firstTimeUserSuccessText"></span>
+                </div>
+
+                <form id="firstTimeUserForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-id-card"></i> No. Matriks</label>
+                        <input type="text" id="firstTimeUserMatrix" placeholder="Contoh: 18DDT21F1001" autocomplete="username" required />
+                    </div>
+                    <button type="submit" class="btn-login"><i class="fas fa-arrow-right"></i> Seterusnya</button>
+                </form>
+                <p class="auth-switch"><a href="#" id="showLoginFromFirstTimeUserLink"><i class="fas fa-arrow-left"></i> Kembali ke log masuk</a></p>
             </div>
         </div>
 

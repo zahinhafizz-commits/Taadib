@@ -1123,9 +1123,9 @@ function renderSidebarNavigation(role) {
 
     if (role === 'warden') {
         navHTML += `<button class="nav-item active" data-panel="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</button>`;
-        navHTML += `<button class="nav-item" data-panel="laporan"><i class="fas fa-plus-circle"></i> Laporan</button>`;
-        navHTML += `<button class="nav-item" data-panel="senaraiPelajar"><i class="fas fa-users"></i> Status Pelajar</button>`;
         navHTML += `<button class="nav-item" data-panel="senaraiKes"><i class="fas fa-file-medical"></i> Daftar Kes</button>`;
+        navHTML += `<button class="nav-item" data-panel="laporan"><i class="fas fa-plus-circle"></i> Laporan Kes</button>`;
+        navHTML += `<button class="nav-item" data-panel="senaraiPelajar"><i class="fas fa-users"></i> Status Pelajar</button>`;
         navHTML += `<button class="nav-item" data-panel="resetPassword"><i class="fas fa-key"></i> Reset Kata Laluan</button>`;
     } else if (role === 'admin') {
         navHTML += `<button class="nav-item active" data-panel="adminPanel"><i class="fas fa-user-shield"></i> Admin</button>`;

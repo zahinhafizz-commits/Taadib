@@ -27,7 +27,6 @@ export function createDataFetchingService({ db, state, getJabatanFromMatrix, syn
                     jabatan: getJabatanFromMatrix(data.matrix_no || data.no_matriks || docSnap.id, data.jabatan || "N/A"),
                     blok_asrama: data.blok_asrama || data.block || data.blok || "-",
                     room_no: data.room_no || "-",
-                    bed_no: data.bed_no ?? "-",
                     status_amaran: data.status_amaran || "Tiada Amaran",
                     markah_disiplin: data.markah_disiplin ?? 100
                 };

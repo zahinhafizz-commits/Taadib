@@ -120,7 +120,6 @@ export function createDataFetchingService({ db, state, getJabatanFromMatrix, syn
             jabatan: getJabatanFromMatrix(data.matrix_no || data.no_matriks || fallbackMatrix, data.jabatan || "N/A"),
             blok_asrama: data.blok_asrama || data.block || "-",
             room_no: data.room_no || "-",
-            bed_no: data.bed_no ?? "-",
             semester: data.semester || "-",
             status_amaran: data.status_amaran || "Tiada Amaran",
             markah_disiplin: data.markah_disiplin ?? 100

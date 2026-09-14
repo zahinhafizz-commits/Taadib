@@ -1169,6 +1169,105 @@ td {
     color: #4c1d95;
 }
 
+.report-image-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(19, 12, 36, 0.82);
+}
+
+.report-image-modal-content {
+    position: relative;
+    display: grid;
+    place-items: center;
+    max-width: min(900px, 96vw);
+    max-height: 90vh;
+    overflow: auto;
+}
+
+.report-image-modal-content img {
+    display: block;
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    transform-origin: center;
+    transition: transform 160ms ease;
+}
+
+.report-image-modal-toolbar {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    z-index: 2;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    transform: translateX(-50%);
+}
+
+.report-image-modal-toolbar button {
+    min-width: 38px;
+    height: 36px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #321650;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.report-image-modal-toolbar .report-image-zoom-reset {
+    min-width: 58px;
+    font-size: 13px;
+}
+
+.report-image-modal-close {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    z-index: 1;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #321650;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.password-input-wrap {
+    position: relative;
+}
+
+.password-input-wrap input {
+    width: 100%;
+    padding-right: 44px;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    display: grid;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: #6d5a88;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
 @media print {
     html, body {
         overflow: visible !important;

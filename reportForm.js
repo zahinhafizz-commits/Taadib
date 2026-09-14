@@ -28,6 +28,36 @@ export const kategoriKesGroups = {
     ]
 };
 
+async function compressImageForFirestore(file) {
+    const maxBytes = 700 * 1024;
+    const objectUrl = URL.createObjectURL(file);
+
+    try {
+        const image = await new Promise((resolve, reject) => {
+            const imageElement = new Image();
+            imageElement.onload = () => resolve(imageElement);
+            imageElement.onerror = reject;
+            imageElement.src = objectUrl;
+        });
+        const scale = Math.min(1, 1600 / Math.max(image.width, image.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext('2d');
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        for (let quality = 0.8; quality >= 0.3; quality -= 0.1) {
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            if (dataUrl.length * 0.75 <= maxBytes) return dataUrl;
+        }
+        throw new Error('Compressed image is still too large.');
+    } finally {
+        URL.revokeObjectURL(objectUrl);
+    }
+}
+
 export function setupAddReportForm(presetMatriks = null, deps = {}) {
     const {
         getStudentByMatrixID,
@@ -140,15 +170,17 @@ export function setupAddReportForm(presetMatriks = null, deps = {}) {
             const file = fileInput.files[0];
             const maxMB = 20;
             if (file.size > maxMB * 1024 * 1024) {
-                showReportPopup("Saiz Imej Terlalu Besar", `Sila pilih imej yang lebih kecil daripada ${maxMB}MB.`, 'error');
+                showReportPopup("Saiz Imej Terlalu Besar", "Sila pilih imej yang lebih kecil daripada 20MB.", 'error');
                 return;
             }
 
-            imageUrl = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.readAsDataURL(file);
-            });
+            try {
+                imageUrl = await compressImageForFirestore(file);
+            } catch (imageError) {
+                console.error("Ralat memproses gambar laporan:", imageError);
+                showReportPopup("Gagal Memproses Gambar", "Sila pilih gambar yang lebih kecil dan cuba lagi.", 'error');
+                return;
+            }
         }
 
         try {
@@ -164,34 +196,44 @@ export function setupAddReportForm(presetMatriks = null, deps = {}) {
                 warden_id: auth.currentUser ? auth.currentUser.uid : "unknown"
             });
 
-            allReportsData = null;
-            studentReportsCache.clear();
-            dataLoaded.reports = false;
-            await fetchReportsData();
-            const nextScore = calculateStudentMeritScore(matriksVal);
-            const studentDocRef = doc(db, "students", matriksVal);
             try {
-                await updateDoc(studentDocRef, { markah_disiplin: nextScore });
-            } catch (updateErr) {
-                console.warn("Update student score failed:", updateErr);
-            }
+                showReportPopup("Laporan Berjaya Disimpan", "Laporan kes telah berjaya disimpan.");
+                allReportsData = null;
+                studentReportsCache.clear();
+                dataLoaded.reports = false;
+                await fetchReportsData();
+                const nextScore = calculateStudentMeritScore(matriksVal);
+                const studentDocRef = doc(db, "students", matriksVal);
+                try {
+                    await updateDoc(studentDocRef, { markah_disiplin: nextScore });
+                } catch (updateErr) {
+                    console.warn("Update student score failed:", updateErr);
+                }
 
-            const matchingStudent = studentList.find(s => s.no_matriks === matriksVal);
-            if (matchingStudent) {
-                matchingStudent.markah_disiplin = nextScore;
-            }
+                const matchingStudent = studentList.find(s => s.no_matriks === matriksVal);
+                if (matchingStudent) {
+                    matchingStudent.markah_disiplin = nextScore;
+                }
 
-            if (currentUserData?.no_matriks === matriksVal) {
-                currentUserData.markah_disiplin = nextScore;
+                if (currentUserData?.no_matriks === matriksVal) {
+                    currentUserData.markah_disiplin = nextScore;
+                }
+                syncStudentMeritScores();
+                loadPanelContent("senaraiKes");
+            } catch (refreshErr) {
+                console.warn("Laporan disimpan tetapi paparan gagal dikemas kini:", refreshErr);
             }
-
-            showReportPopup("Laporan Berjaya Disimpan", "Laporan kes telah berjaya disimpan.");
-            await fetchReportsData();
-            syncStudentMeritScores();
-            loadPanelContent("senaraiKes");
         } catch (err) {
             console.error("Ralat menyimpan laporan:", err);
-            showReportPopup("Gagal Menyimpan Laporan", "Sila cuba lagi.", 'error');
+            const errorCode = err?.code || '';
+            const message = errorCode === 'permission-denied'
+                ? "Akses pangkalan data ditolak. Sila log masuk semula atau semak peraturan Firebase."
+                : errorCode === 'unauthenticated'
+                    ? "Sesi log masuk telah tamat. Sila log masuk semula."
+                : errorCode === 'resource-exhausted' || errorCode === 'invalid-argument'
+                    ? "Data laporan terlalu besar. Sila gunakan gambar yang lebih kecil."
+                    : `Sila cuba lagi${errorCode ? ` (${errorCode})` : ''}.`;
+            showReportPopup("Gagal Menyimpan Laporan", message, 'error');
         }
     });
 }

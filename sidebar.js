@@ -1,4 +1,4 @@
-export function renderSidebarNavigation(role, loadPanelContent, logoutUser) {
+export function renderSidebarNavigation(role, loadPanelContent, logoutUser, openChangePassword) {
     const navMenu = document.getElementById("navMenu");
     if (!navMenu) return;
 
@@ -17,6 +17,18 @@ export function renderSidebarNavigation(role, loadPanelContent, logoutUser) {
     }
 
     navMenu.innerHTML = navHTML;
+
+    if (role === 'warden' || role === 'admin') {
+        const changePasswordBtn = document.createElement('button');
+        changePasswordBtn.className = 'nav-item change-password-btn';
+        changePasswordBtn.innerHTML = '<i class="fas fa-key"></i> Tukar Kata Laluan';
+        changePasswordBtn.addEventListener('click', () => {
+            if (typeof openChangePassword === 'function') {
+                openChangePassword();
+            }
+        });
+        navMenu.appendChild(changePasswordBtn);
+    }
 
     const logoutBtn = document.createElement('button');
     logoutBtn.className = 'nav-item logout-btn';

@@ -116,15 +116,29 @@
 
                 <form id="changePasswordForm">
                     <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Kata Laluan Semasa</label>
+                        <div class="password-input-wrap">
+                            <input type="password" id="currentPassword" autocomplete="current-password" required />
+                            <button type="button" class="password-toggle" data-password-target="currentPassword" aria-label="Tunjukkan kata laluan"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label><i class="fas fa-lock"></i> Kata Laluan Baharu</label>
-                        <input type="password" id="newPassword" minlength="6" autocomplete="new-password" required />
+                        <div class="password-input-wrap">
+                            <input type="password" id="newPassword" minlength="6" autocomplete="new-password" required />
+                            <button type="button" class="password-toggle" data-password-target="newPassword" aria-label="Tunjukkan kata laluan"><i class="fas fa-eye"></i></button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label><i class="fas fa-lock"></i> Sahkan Kata Laluan Baharu</label>
-                        <input type="password" id="confirmNewPassword" minlength="6" autocomplete="new-password" required />
+                        <div class="password-input-wrap">
+                            <input type="password" id="confirmNewPassword" minlength="6" autocomplete="new-password" required />
+                            <button type="button" class="password-toggle" data-password-target="confirmNewPassword" aria-label="Tunjukkan kata laluan"><i class="fas fa-eye"></i></button>
+                        </div>
                     </div>
                     <button type="submit" class="btn-login"><i class="fas fa-save"></i> Simpan Kata Laluan</button>
                 </form>
+                <p class="auth-switch"><a href="#" id="backFromChangePasswordLink"><i class="fas fa-arrow-left"></i> Kembali ke log masuk</a></p>
             </div>
         </div>
 

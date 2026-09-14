@@ -484,7 +484,6 @@ function formatProfileLabel(key) {
         name: 'Nama',
         nama: 'Nama',
         room_no: 'No. Bilik',
-        bed_no: 'No. Katil',
         semester: 'Semester',
         block: 'Blok Asrama',
         blok_asrama: 'Blok Asrama',
@@ -506,7 +505,7 @@ function renderStudentProfileFields(student) {
         'matrix_no', 'name', 'nama_pelajar',
         'block', 'blok', 'status_amaran', 'createdAt', 'updatedAt'
     ]);
-    const preferredFields = ['nama', 'no_matriks', 'ic_no', 'jabatan', 'blok_asrama', 'room_no', 'bed_no', 'semester'];
+    const preferredFields = ['nama', 'no_matriks', 'ic_no', 'jabatan', 'blok_asrama', 'room_no', 'semester'];
     const profileEntries = preferredFields
         .filter(key => student?.[key] !== undefined && student?.[key] !== null)
         .map(key => [key, student[key]])

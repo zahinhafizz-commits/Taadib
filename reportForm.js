@@ -235,5 +235,202 @@ export function setupAddReportForm(presetMatriks = null, deps = {}) {
                     : `Sila cuba lagi${errorCode ? ` (${errorCode})` : ''}.`;
             showReportPopup("Gagal Menyimpan Laporan", message, 'error');
         }
+    });    
+}
+
+export function setupStudentComplaintForm(deps = {}) {
+    const {
+        getStudentByMatrixID,
+        showReportPopup,
+        addDoc,
+        collection,
+        db,
+        auth,
+        currentUserData
+    } = deps;
+
+    const form = document.getElementById("studentComplaintForm");
+
+    if (!form) return;
+
+    const matrixInput = document.getElementById("complaintTargetMatrix");
+    const nameInput = document.getElementById("complaintTargetName");
+    const departmentInput = document.getElementById("complaintTargetDepartment");
+
+    matrixInput?.addEventListener("input", async (e) => {
+        const matrix = e.target.value.trim().toUpperCase();
+
+        if (!matrix) {
+            if (nameInput) nameInput.value = "";
+            if (departmentInput) departmentInput.value = "";
+            return;
+        }
+
+        const student = await getStudentByMatrixID(matrix);
+
+        if (student) {
+            if (nameInput) nameInput.value = student.nama || "";
+            if (departmentInput) departmentInput.value = student.jabatan || "";
+        } else {
+            if (nameInput) nameInput.value = "";
+            if (departmentInput) departmentInput.value = "";
+        }
+    });
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const targetMatrix = matrixInput?.value.trim().toUpperCase() || "";
+        const targetName = nameInput?.value.trim() || "";
+        const targetDepartment = departmentInput?.value.trim() || "";
+
+        const category =
+            document.getElementById("complaintCategory")?.value.trim() || "";
+
+        const description =
+            document.getElementById("complaintDescription")?.value.trim() || "";
+
+        const imageInput = document.getElementById("complaintImage");
+
+        // Pastikan pelajar yang dilaporkan wujud
+        if (!targetName || !targetDepartment) {
+            showReportPopup(
+                "Pelajar Tidak Dijumpai",
+                "Sila masukkan No. Matriks pelajar yang sah.",
+                "error"
+            );
+            return;
+        }
+
+        // Pelajar tidak boleh melaporkan diri sendiri
+        const reporterMatrix =
+            (currentUserData?.no_matriks || "").toString().trim().toUpperCase();
+
+        if (reporterMatrix && targetMatrix === reporterMatrix) {
+            showReportPopup(
+                "Laporan Tidak Sah",
+                "Anda tidak boleh membuat laporan terhadap diri sendiri.",
+                "error"
+            );
+            return;
+        }
+
+        if (!category || !description) {
+            showReportPopup(
+                "Maklumat Tidak Lengkap",
+                "Sila lengkapkan kategori dan keterangan laporan.",
+                "error"
+            );
+            return;
+        }
+
+        let imageUrl = "";
+
+        // Proses gambar bukti jika ada
+        if (imageInput && imageInput.files.length > 0) {
+            const file = imageInput.files[0];
+
+            if (!file.type.startsWith("image/")) {
+                showReportPopup(
+                    "Fail Tidak Sah",
+                    "Sila pilih fail gambar sahaja.",
+                    "error"
+                );
+                return;
+            }
+
+            const maxMB = 20;
+
+            if (file.size > maxMB * 1024 * 1024) {
+                showReportPopup(
+                    "Saiz Imej Terlalu Besar",
+                    "Sila pilih gambar yang lebih kecil daripada 20MB.",
+                    "error"
+                );
+                return;
+            }
+
+            try {
+                imageUrl = await compressImageForFirestore(file);
+            } catch (imageError) {
+                console.error(
+                    "Ralat memproses gambar aduan:",
+                    imageError
+                );
+
+                showReportPopup(
+                    "Gagal Memproses Gambar",
+                    "Sila pilih gambar yang lebih kecil dan cuba lagi.",
+                    "error"
+                );
+                return;
+            }
+        }
+
+        try {
+            await addDoc(collection(db, "laporan"), {
+
+                // Pelajar yang dilaporkan
+                no_matriks_pelajar: targetMatrix,
+                nama_pelajar: targetName,
+                jabatan_pelajar: targetDepartment,
+
+                // Maklumat laporan
+                kategori_kes: category,
+                keterangan: description,
+                gambar_url: imageUrl,
+
+                // Maklumat pelapor
+                pelapor_matriks:
+                    currentUserData?.no_matriks || "",
+                pelapor_nama:
+                    currentUserData?.nama ||
+                    currentUserData?.name ||
+                    "",
+                pelapor_uid:
+                    auth.currentUser?.uid || "",
+
+                // Status laporan
+                status: "Menunggu Semakan",
+
+                // Tarikh
+                tarikh:
+                    new Date().toISOString().split("T")[0],
+
+                // Masa
+                timestamp:
+                    new Date().toISOString()
+            });
+
+            showReportPopup(
+                "Laporan Berjaya Dihantar",
+                "Laporan anda telah dihantar kepada pihak warden untuk semakan.",
+                "success"
+            );
+
+            form.reset();
+
+            if (nameInput) nameInput.value = "";
+            if (departmentInput) departmentInput.value = "";
+
+        } catch (err) {
+            console.error(
+                "Ralat menyimpan aduan pelajar:",
+                err
+            );
+
+            const errorCode = err?.code || "";
+
+            const message =
+                errorCode === "permission-denied"
+                    ? "Akses pangkalan data ditolak. Sila semak Firebase Security Rules."
+                    : "Laporan gagal dihantar. Sila cuba lagi.";
+
+            showReportPopup(
+                "Gagal Menghantar Laporan",
+                message,
+                "error"
+            );
+        }
     });
 }

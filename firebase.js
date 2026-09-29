@@ -24,7 +24,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { renderSidebarNavigation } from "./sidebar.js";
 import "./navigation.js";
-import { kategoriKesGroups, setupAddReportForm } from "./reportForm.js";
+import { kategoriKesGroups, setupAddReportForm, setupStudentComplaintForm } from "./reportForm.js";
 import { createDataFetchingService } from "./data-fetching.js";
 import { createReportUiService } from "./report-ui.js";
 import { createPanelRouter } from "./panel-router.js";
@@ -721,7 +721,7 @@ const loadPanelContent = createPanelRouter({
     renderStudentProfileFields, renderMeritBadge, showBadgeDetails,
     renderStudentTableRows, matchStudentTableSearch, renderReportsTableRows,
     bindReportImagePreviews,
-    kategoriKesGroups, setupAddReportForm
+    kategoriKesGroups, setupAddReportForm, setupStudentComplaintForm
 });
 
 const { showDashboard } = createAuthenticationService({

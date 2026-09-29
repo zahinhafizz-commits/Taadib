@@ -11,7 +11,7 @@ export function createPanelRouter(deps) {
             renderStudentProfileFields, renderMeritBadge, showBadgeDetails,
             renderStudentTableRows, matchStudentTableSearch, renderReportsTableRows,
             bindReportImagePreviews,
-            kategoriKesGroups, setupAddReportForm
+            kategoriKesGroups, setupAddReportForm, setupStudentComplaintForm
         } = deps;
 
     const contentPanel = document.getElementById("contentPanels");
@@ -182,9 +182,17 @@ export function createPanelRouter(deps) {
                 </div>
             </div>
 
-            <div style="margin: 4px 0 20px; text-align: right;">
-                <button type="button" class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Cetak Laporan Pelajar</button>
-            </div>
+            <div style="margin: 4px 0 20px; text-align: right; display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap;">
+    
+    <button type="button" class="btn btn-primary" onclick="window.print()">
+        <i class="fas fa-print"></i> Cetak Laporan Pelajar
+    </button>
+
+    <button type="button" class="btn btn-primary" id="btnMembuatLaporan">
+        <i class="fas fa-file-alt"></i> Membuat Laporan
+    </button>
+
+</div>
 
             <div id="meritBadgeModal" class="merit-modal hidden"></div>
         `;
@@ -194,10 +202,138 @@ export function createPanelRouter(deps) {
             showBadgeDetails(Number(e.currentTarget.dataset.meritScore || 100));
         });
 
+        document.getElementById('btnMembuatLaporan')?.addEventListener('click', () => {
+        loadPanelContent('buatLaporanPelajar');
+        });
+
         document.querySelectorAll('.merit-badge').forEach(button => {
             button.addEventListener('click', (e) => {
                 showBadgeDetails(Number(e.currentTarget.dataset.badgeScore || 100));
             });
+        });
+
+
+        // PELAJAR: MEMBUAT LAPORAN
+    } else if (panelName === "buatLaporanPelajar") {
+        if (pageTitleText) pageTitleText.textContent = "Membuat Laporan";
+
+        if (!currentUserData) {
+            contentPanel.innerHTML = `
+                <div class="card-box">
+                    <h3>Profil pelajar belum tersedia</h3>
+                    <p>Sila muat semula halaman dan cuba lagi.</p>
+                </div>
+            `;
+            return;
+        }
+
+        contentPanel.innerHTML = `
+            <div class="card-box" style="margin-bottom: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <h3>Membuat Laporan</h3>
+                        <p style="margin-top: 6px; color: #777;">
+                            Laporkan pelajar yang mempunyai masalah disiplin kepada pihak warden.
+                        </p>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary" id="backToRekodSayaBtn">
+                        <i class="fas fa-arrow-left"></i> Kembali
+                    </button>
+                </div>
+
+                <form id="studentComplaintForm" style="margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+
+                    <div>
+                        <label style="font-weight:600;">No. Matriks Pelajar Yang Dilaporkan</label>
+                        <input
+                            type="text"
+                            id="complaintTargetMatrix"
+                            class="form-control"
+                            placeholder="Cth: 18DDT21F1001"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label style="font-weight:600;">Nama Pelajar</label>
+                        <input
+                            type="text"
+                            id="complaintTargetName"
+                            class="form-control"
+                            readonly
+                            placeholder="Auto-fill"
+                        >
+                    </div>
+
+                    <div>
+                        <label style="font-weight:600;">Jabatan</label>
+                        <input
+                            type="text"
+                            id="complaintTargetDepartment"
+                            class="form-control"
+                            readonly
+                            placeholder="Auto-fill"
+                        >
+                    </div>
+
+                    <div style="grid-column: 1 / -1;">
+                        <label style="font-weight:600;">Kategori Kes</label>
+                        <select id="complaintCategory" class="form-control" required>
+                            <option value="">Pilih Kategori Kes</option>
+                            ${Object.values(kategoriKesGroups).flat().map(category => `
+                                <option value="${category}">${category}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+
+                    <div style="grid-column: 1 / -1;">
+                        <label style="font-weight:600;">Keterangan Laporan</label>
+                        <textarea
+                            id="complaintDescription"
+                            class="form-control"
+                            rows="5"
+                            placeholder="Terangkan masalah atau kejadian yang berlaku..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div style="grid-column: 1 / -1;">
+                        <label style="font-weight:600;">
+                            Lampirkan Gambar Bukti
+                            <span style="font-weight:normal; color:#777;">(Pilihan)</span>
+                        </label>
+
+                        <input
+                            type="file"
+                            id="complaintImage"
+                            class="form-control"
+                            accept="image/*"
+                        >
+                    </div>
+
+                    <div style="grid-column: 1 / -1; text-align: right;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Hantar Laporan
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        `;
+
+        document.getElementById('backToRekodSayaBtn')?.addEventListener('click', () => {
+            loadPanelContent('rekodSaya');
+        });
+
+        setupStudentComplaintForm({
+            getStudentByMatrixID,
+            showReportPopup,
+            addDoc,
+            collection,
+            db,
+            auth,
+            currentUserData
         });
 
     // 2. SENARAI PELAJAR (LAJUR DISENGGARA: STATUS AMARAN DITUKAR KE BUTTON LAPORAN)

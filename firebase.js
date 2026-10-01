@@ -18,6 +18,7 @@ import {
     doc, 
     setDoc,
     updateDoc,
+    deleteDoc,
     query,
     where,
     limit
@@ -713,7 +714,7 @@ const loadPanelContent = createPanelRouter({
     get allReportsData() { return allReportsData; },
     get studentReportsCache() { return studentReportsCache; },
     dataLoaded,
-    createUserWithEmailAndPassword, setDoc, addDoc, collection, updateDoc, doc, showReportPopup,
+    createUserWithEmailAndPassword, setDoc, addDoc, collection, updateDoc, deleteDoc, doc, showReportPopup,
     getStudentByMatrixID, syncStudentMeritScores,
     fetchReportsData, fetchStudentList, getStudentPasswordResetRequests,
     approveStudentPasswordReset, getJabatanFromMatrix, getStatusBadgeClass,
@@ -723,6 +724,8 @@ const loadPanelContent = createPanelRouter({
     bindReportImagePreviews,
     kategoriKesGroups, setupAddReportForm, setupStudentComplaintForm
 });
+
+window.loadPanelContent = loadPanelContent;
 
 const { showDashboard } = createAuthenticationService({
     auth,

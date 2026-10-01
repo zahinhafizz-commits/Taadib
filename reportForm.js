@@ -205,7 +205,7 @@ export function setupAddReportForm(presetMatriks = null, deps = {}) {
                 const nextScore = calculateStudentMeritScore(matriksVal);
                 const studentDocRef = doc(db, "students", matriksVal);
                 try {
-                    await updateDoc(studentDocRef, {merit_disiplin: nextScore });
+                    await updateDoc(studentDocRef, { merit_disiplin: nextScore });
                 } catch (updateErr) {
                     console.warn("Update student score failed:", updateErr);
                 }
@@ -371,9 +371,9 @@ export function setupStudentComplaintForm(deps = {}) {
             await addDoc(collection(db, "laporan"), {
 
                 // Pelajar yang dilaporkan
-                no_matriks_pelajar: targetMatrix,
+                no_matriks: targetMatrix,
                 nama_pelajar: targetName,
-                jabatan_pelajar: targetDepartment,
+                jabatan: targetDepartment,
 
                 // Maklumat laporan
                 kategori_kes: category,

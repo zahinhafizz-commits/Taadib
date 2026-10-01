@@ -62,7 +62,7 @@ export function createAuthenticationService({
                     no_matriks: studentProfile?.no_matriks || studentProfile?.id || matrix,
                     role: fallbackRole,
                     jabatan: getJabatanFromMatrix(studentProfile?.no_matriks || studentProfile?.id || matrix, studentProfile?.jabatan || 'N/A'),
-                    blok_asrama: 'Blok A', status_amaran: 'Tiada Amaran', markah_disiplin: 100
+                    blok_asrama: 'Blok A', status_amaran: 'Tiada Amaran', merit_disiplin: 100
                 };
                 state.currentRole = normalizeRole(state.currentUserData.role);
             }

@@ -38,23 +38,32 @@ export function createPanelRouter(deps) {
             if (!confirmed) return;
 
             try {
-                await deleteDoc(doc(db, "laporan", reportId));
+    await deleteDoc(doc(db, "laporan", reportId));
 
-                studentReportsCache.clear();
-                dataLoaded.reports = false;
+    // Buang terus report daripada data yang sedang dipaparkan
+    const reportIndex = reportsData.findIndex(r => r.id === reportId);
+    if (reportIndex !== -1) {
+        reportsData.splice(reportIndex, 1);
+    }
 
-                await fetchReportsData();
+    const allReportIndex = allReportsData.findIndex(r => r.id === reportId);
+    if (allReportIndex !== -1) {
+        allReportsData.splice(allReportIndex, 1);
+    }
 
-                showReportPopup(
-                    "Laporan Dipadam",
-                    "Laporan telah berjaya dipadam daripada Firebase.",
-                    "success"
-                );
+    studentReportsCache.clear();
+    dataLoaded.reports = true;
 
-                // Refresh paparan laporan
-                await window.loadPanelContent?.("laporan");
+    // Refresh table terus
+    await window.loadPanelContent("laporan");
 
-            } catch (error) {
+    showReportPopup(
+        "Laporan Dipadam",
+        "Laporan telah berjaya dipadam daripada Firebase.",
+        "success"
+    );
+
+} catch (error) {
                 console.error("Gagal delete laporan:", error);
 
                 showReportPopup(

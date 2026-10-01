@@ -25,7 +25,7 @@ export function createReportUiService({ getMeritBadgeTier, getStatusBadgeClass, 
     function matchStudentTableSearch(student, query, includeScoreAndBadge = false) {
         if (!query) return true;
 
-        const badge = getMeritBadgeTier(Number(student?.markah_disiplin ?? 100));
+        const badge = getMeritBadgeTier(Number(student?.merit_disiplin ?? 100));
         const searchableFields = [
             student?.no_matriks,
             student?.nama,
@@ -34,7 +34,7 @@ export function createReportUiService({ getMeritBadgeTier, getStatusBadgeClass, 
         ];
 
         if (includeScoreAndBadge) {
-            searchableFields.push(String(student?.markah_disiplin ?? 100));
+            searchableFields.push(String(student?.merit_disiplin ?? 100));
             searchableFields.push(badge.label);
             searchableFields.push(badge.key);
             searchableFields.push(badge.icon);
@@ -47,7 +47,7 @@ export function createReportUiService({ getMeritBadgeTier, getStatusBadgeClass, 
         const columnCount = includeReportAction ? 5 : 6;
         if (!list.length) return `<tr><td colspan="${columnCount}" style="text-align:center;">Tiada rekod pelajar dijumpai.</td></tr>`;
         return list.slice(0, visibleCount).map(student => {
-            const score = Number(student.markah_disiplin ?? 100);
+            const score = Number(student.merit_disiplin ?? 100);
             const badge = getMeritBadgeTier(score);
             return `
                 <tr>

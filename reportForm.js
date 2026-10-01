@@ -7,7 +7,7 @@ export const kategoriKesGroups = {
     ],
     "Kesalahan Etika & Pergaulan": [
         "Pergaulan Bebas",
-        "Tetamu / Menumpang",
+        "Tetamu Unsuransurans / Menumpang",
         "Penyertaan Haram",
         "Perhimpunan Tanpa Kebenaran"
     ],
@@ -205,18 +205,18 @@ export function setupAddReportForm(presetMatriks = null, deps = {}) {
                 const nextScore = calculateStudentMeritScore(matriksVal);
                 const studentDocRef = doc(db, "students", matriksVal);
                 try {
-                    await updateDoc(studentDocRef, { markah_disiplin: nextScore });
+                    await updateDoc(studentDocRef, {merit_disiplin: nextScore });
                 } catch (updateErr) {
                     console.warn("Update student score failed:", updateErr);
                 }
 
                 const matchingStudent = studentList.find(s => s.no_matriks === matriksVal);
                 if (matchingStudent) {
-                    matchingStudent.markah_disiplin = nextScore;
+                    matchingStudent.merit_disiplin = nextScore;
                 }
 
                 if (currentUserData?.no_matriks === matriksVal) {
-                    currentUserData.markah_disiplin = nextScore;
+                    currentUserData.merit_disiplin = nextScore;
                 }
                 syncStudentMeritScores();
                 loadPanelContent("senaraiKes");

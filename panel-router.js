@@ -168,7 +168,7 @@ export function createPanelRouter(deps) {
         currentUserData.jabatan = getJabatanFromMatrix(userMatriks, currentUserData?.jabatan || 'N/A');
         const badgeClass = getStatusBadgeClass(currentUserData?.status_amaran);
         const calculatedScore = calculateStudentMeritScore(userMatriks);
-        currentUserData.markah_disiplin = calculatedScore;
+        currentUserData.merit_disiplin = calculatedScore;
         const meritScore = Number(calculatedScore ?? 100);
         const meritBadge = getMeritBadgeTier(meritScore);
         const ledgerEntries = getMeritLedgerEntries(userMatriks);
@@ -179,7 +179,7 @@ export function createPanelRouter(deps) {
                 <div class="profile-fields">
                     ${renderStudentProfileFields(currentUserData)}
                     <div class="profile-field"><strong>Status Amaran:</strong> <div><span class="status-badge ${badgeClass}">${currentUserData?.status_amaran || 'Tiada Amaran'}</span></div></div>
-                    <div class="profile-field"><strong>Markah Disiplin:</strong> <div>${meritScore} / 100</div></div>
+                    <div class="profile-field"><strong>Merit Disiplin:</strong> <div>${meritScore} / 100</div></div>
                     <div style="grid-column: 1 / -1;">
                         <strong>Badge Merit:</strong>
                         <div style="margin-top: 10px;">${renderMeritBadge(meritScore)}</div>
@@ -421,7 +421,7 @@ export function createPanelRouter(deps) {
                                 <th>Nama Pelajar</th>
                                 <th>Jabatan</th>
                                 <th>Lokasi Asrama</th>
-                                <th>Markah</th>
+                                <th>Merit</th>
                                 <th>Badge</th>
                             </tr>
                         </thead>
@@ -826,7 +826,7 @@ export function createPanelRouter(deps) {
             const filtered = reportsData.filter(r => {
                 const sInfo = studentList.find(s => s.no_matriks === r.no_matriks?.toUpperCase());
                 const blok = r.blok_asrama || sInfo?.blok_asrama || "";
-                const studentScore = Number(sInfo?.markah_disiplin ?? 100);
+                const studentScore = Number(sInfo?.merit_disiplin ?? 100);
                 const badge = getMeritBadgeTier(studentScore);
 
                 const matchSearch = !searchQ || 
@@ -959,10 +959,10 @@ export function createPanelRouter(deps) {
         const totalReports = reportsData.length;
         const totalProblematic = new Set(reportsData.map(r => r.no_matriks).filter(Boolean)).size;
         const meritCounts = {
-            model: studentList.filter(s => getMeritBadgeTier(s.markah_disiplin ?? 100).key === 'model').length,
-            good: studentList.filter(s => getMeritBadgeTier(s.markah_disiplin ?? 100).key === 'good').length,
-            warning: studentList.filter(s => getMeritBadgeTier(s.markah_disiplin ?? 100).key === 'warning').length,
-            probation: studentList.filter(s => getMeritBadgeTier(s.markah_disiplin ?? 100).key === 'probation').length
+            model: studentList.filter(s => getMeritBadgeTier(s.merit_disiplin ?? 100).key === 'model').length,
+            good: studentList.filter(s => getMeritBadgeTier(s.merit_disiplin ?? 100).key === 'good').length,
+            warning: studentList.filter(s => getMeritBadgeTier(s.merit_disiplin ?? 100).key === 'warning').length,
+            probation: studentList.filter(s => getMeritBadgeTier(s.merit_disiplin ?? 100).key === 'probation').length
         };
 
         const maxMeritCount = Math.max(1, ...Object.values(meritCounts));

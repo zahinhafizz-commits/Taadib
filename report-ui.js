@@ -78,8 +78,23 @@ export function createReportUiService({ getMeritBadgeTier, getStatusBadgeClass, 
                     <td>${report.kategori_kes || '-'}</td>
                     <td>${report.gambar_url ? `<a href="${report.gambar_url}" class="report-image-preview-link" data-report-image="${report.gambar_url}" title="Lihat gambar penuh"><img src="${report.gambar_url}" alt="Bukti laporan" style="width:40px; height:40px; object-fit:cover; border-radius:6px; cursor:zoom-in;"></a>` : 'Tiada'}</td>
                     <td><span class="status-badge ${getStatusBadgeClass(report.status_amaran)}">${report.status_amaran || 'Amaran Pertama'}</span></td>
-                    ${includeReportAction ? `<td><button class="btn btn-primary" style="padding: 6px 16px; font-size: 13px;" onclick="window.bukaDaftarKesPelajar('${report.no_matriks || ''}')"><i class="fas fa-plus"></i> Laporan</button></td>` : ''}
-                </tr>
+                    ${includeReportAction ? `
+    <td style="white-space: nowrap;">
+        <button 
+            class="btn btn-primary" 
+            style="padding: 6px 16px; font-size: 13px;"
+            onclick="window.bukaDaftarKesPelajar('${report.no_matriks || ''}')">
+            <i class="fas fa-plus"></i> Laporan
+        </button>
+
+        <button 
+            class="btn btn-danger"
+            style="padding: 6px 16px; font-size: 13px; margin-left: 5px;"
+            onclick="window.deleteDisciplineReport('${report.id}')">
+            <i class="fas fa-trash"></i> Delete
+        </button>
+    </td>
+` : ''}
             `;
         }).join('');
     }

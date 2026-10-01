@@ -7,7 +7,7 @@ export const kategoriKesGroups = {
     ],
     "Kesalahan Etika & Pergaulan": [
         "Pergaulan Bebas",
-        "Tetamu Unsuransurans / Menumpang",
+        "Tetamu / Menumpang",
         "Penyertaan Haram",
         "Perhimpunan Tanpa Kebenaran"
     ],

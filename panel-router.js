@@ -3,7 +3,7 @@ export function createPanelRouter(deps) {
         const {
             auth, db, currentUserData, studentList, reportsData,
             allReportsData, studentReportsCache, dataLoaded,
-            createUserWithEmailAndPassword, setDoc, addDoc, collection, updateDoc, doc, showReportPopup,
+            createUserWithEmailAndPassword, setDoc, addDoc, collection, updateDoc, deleteDoc, doc, showReportPopup,
             getStudentByMatrixID, syncStudentMeritScores,
             fetchReportsData, fetchStudentList, getStudentPasswordResetRequests,
             approveStudentPasswordReset, getJabatanFromMatrix, getStatusBadgeClass,
@@ -13,6 +13,59 @@ export function createPanelRouter(deps) {
             bindReportImagePreviews,
             kategoriKesGroups, setupAddReportForm, setupStudentComplaintForm
         } = deps;
+
+         //  FUNCTION DELETE 
+        window.deleteDisciplineReport = async function(reportId) {
+            if (!reportId) {
+                showReportPopup("Gagal", "ID laporan tidak dijumpai.", "error");
+                return;
+            }
+
+            const report = reportsData.find(r => r.id === reportId);
+
+            if (!report) {
+                showReportPopup("Gagal", "Laporan tidak dijumpai.", "error");
+                return;
+            }
+
+            const confirmed = confirm(
+                `Delete laporan untuk ${report.nama_pelajar || report.no_matriks}?\n\n` +
+                `Kategori: ${report.kategori_kes || '-'}\n` +
+                `Tarikh: ${report.tarikh || '-'}\n\n` +
+                `Tindakan ini tidak boleh dibuat asal.`
+            );
+
+            if (!confirmed) return;
+
+            try {
+                await deleteDoc(doc(db, "laporan", reportId));
+
+                studentReportsCache.clear();
+                dataLoaded.reports = false;
+
+                await fetchReportsData();
+
+                showReportPopup(
+                    "Laporan Dipadam",
+                    "Laporan telah berjaya dipadam daripada Firebase.",
+                    "success"
+                );
+
+                // Refresh paparan laporan
+                await window.loadPanelContent?.("laporan");
+
+            } catch (error) {
+                console.error("Gagal delete laporan:", error);
+
+                showReportPopup(
+                    "Gagal Memadam Laporan",
+                    error?.code === "permission-denied"
+                        ? "Anda tidak mempunyai kebenaran untuk memadam laporan."
+                        : "Laporan gagal dipadam. Sila cuba lagi.",
+                    "error"
+                );
+            }
+        };
 
     const contentPanel = document.getElementById("contentPanels");
     const pageTitleText = document.getElementById("pageTitleText");

@@ -28,7 +28,7 @@ export function createDataFetchingService({ db, state, getJabatanFromMatrix, syn
                     blok_asrama: data.blok_asrama || data.block || data.blok || "-",
                     room_no: data.room_no || "-",
                     status_amaran: data.status_amaran || "Tiada Amaran",
-                    markah_disiplin: data.markah_disiplin ?? 100
+                    merit_disiplin: data.merit_disiplin ?? 100
                 };
             });
             state.studentList.sort((firstStudent, secondStudent) => firstStudent.no_matriks.localeCompare(secondStudent.no_matriks));
@@ -122,7 +122,7 @@ export function createDataFetchingService({ db, state, getJabatanFromMatrix, syn
             room_no: data.room_no || "-",
             semester: data.semester || "-",
             status_amaran: data.status_amaran || "Tiada Amaran",
-            markah_disiplin: data.markah_disiplin ?? 100
+            merit_disiplin: data.merit_disiplin ?? 100
         };
     }
 

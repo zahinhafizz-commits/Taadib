@@ -502,7 +502,7 @@ function formatProfileValue(value) {
 
 function renderStudentProfileFields(student) {
     const hiddenFields = new Set([
-        'id', 'role', 'markah_disiplin', 'uid', 'passwordChanged',
+        'id', 'role', 'merit_disiplin', 'uid', 'passwordChanged',
         'matrix_no', 'name', 'nama_pelajar',
         'block', 'blok', 'status_amaran', 'createdAt', 'updatedAt'
     ]);
@@ -549,11 +549,11 @@ function calculateStudentMeritScore(studentNo) {
 function syncStudentMeritScores() {
     studentList = studentList.map(student => {
         const score = calculateStudentMeritScore(student.no_matriks);
-        return { ...student, markah_disiplin: score };
+        return { ...student, merit_disiplin: score };
     });
 
     if (currentUserData?.no_matriks) {
-        currentUserData.markah_disiplin = calculateStudentMeritScore(currentUserData.no_matriks);
+        currentUserData.merit_disiplin = calculateStudentMeritScore(currentUserData.no_matriks);
     }
 }
 

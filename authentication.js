@@ -10,13 +10,11 @@ export function createAuthenticationService({
     renderSidebarNavigation, loadPanelContent, signOut
 }) {
     function showDashboard() {
-        const dashboardRole = state.loginMode === 'staff' ? 'warden' : state.currentRole;
-        if (state.loginMode === 'staff') {
-            state.currentRole = dashboardRole;
-        }
+        const dashboardRole = state.currentRole;
+        const roleLabel = dashboardRole === 'ketua_warden' ? 'KETUA WARDEN' : dashboardRole.toUpperCase();
         document.getElementById("sidebarUserName").textContent = state.currentUserData?.nama || auth.currentUser?.email;
-        document.getElementById("sidebarUserRole").textContent = dashboardRole.toUpperCase();
-        document.getElementById("roleLabel").textContent = dashboardRole.toUpperCase();
+        document.getElementById("sidebarUserRole").textContent = roleLabel;
+        document.getElementById("roleLabel").textContent = roleLabel;
         showScreen('dashboardScreen');
         renderSidebarNavigation(dashboardRole, loadPanelContent, () => signOut(auth), () => showScreen('changePasswordScreen'));
         const initialPanel = state.loginMode === 'staff' ? 'dashboard' : state.currentRole === 'pelajar' ? 'rekodSaya' : state.currentRole === 'admin' ? 'adminPanel' : 'dashboard';

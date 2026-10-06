@@ -191,6 +191,7 @@ export function setupAddReportForm(presetMatriks = null, deps = {}) {
                 kategori_kes: document.getElementById("reportKategoriInput").value.trim(),
                 keterangan: document.getElementById("reportKeteranganInput").value.trim(),
                 status_amaran: document.getElementById("reportStatusInput").value,
+                tindakan_amaran: document.getElementById("reportTindakanAmaranInput")?.checked === true,
                 gambar_url: imageUrl,
                 tarikh: new Date().toISOString().split('T')[0],
                 warden_id: auth.currentUser ? auth.currentUser.uid : "unknown"

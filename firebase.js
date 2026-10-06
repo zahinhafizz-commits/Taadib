@@ -75,6 +75,7 @@ function normalizeRole(role) {
     const value = (role || '').toString().trim().toLowerCase();
 
     if (['student', 'pelajar', 'peserta', 'student_tadib'].includes(value)) return 'pelajar';
+    if (['ketua warden', 'ketua_warden', 'ketua-warden', 'chief warden', 'chief_warden'].includes(value)) return 'ketua_warden';
     if (['warden', 'warden_tadib', 'penjaga', 'supervisor', 'hep', 'hep_tadib', 'office'].includes(value)) return 'warden';
     if (['admin', 'administrator', 'rollcall_admin', 'roll-call-admin', 'roll call admin'].includes(value)) return 'admin';
 

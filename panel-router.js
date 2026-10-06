@@ -691,6 +691,10 @@ export function createPanelRouter(deps) {
                                 <option value="Amaran Kedua">Amaran Kedua</option>
                                 <option value="Amaran Terakhir">Amaran Terakhir</option>
                             </select>
+                            <label style="display:flex; align-items:center; gap:8px; margin-top:10px; font-weight:600;">
+                                <input type="checkbox" id="reportTindakanAmaranInput">
+                                Hantar kepada Ketua Warden untuk tindakan amaran
+                            </label>
                         </div>
                         <button type="submit" class="btn btn-primary">Simpan Laporan</button>
                     </div>
@@ -731,6 +735,36 @@ export function createPanelRouter(deps) {
                 presetInput.dispatchEvent(new Event('input'));
             }
         }
+
+    } else if (panelName === "tindakanAmaran") {
+        if (pageTitleText) pageTitleText.textContent = "Tindakan Amaran";
+        await fetchStudentList();
+        await fetchReportsData();
+        const alertReports = reportsData.filter(report => report.tindakan_amaran === true);
+
+        contentPanel.innerHTML = `
+            <div class="card-box">
+                <h3>Tindakan Amaran</h3>
+                <div class="table-wrapper" style="margin-top: 15px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tarikh</th>
+                                <th>No. Matriks</th>
+                                <th>Nama Pelajar</th>
+                                <th>Jabatan</th>
+                                <th>Blok</th>
+                                <th>Kategori Kes</th>
+                                <th>Gambar</th>
+                                <th>Status Amaran</th>
+                            </tr>
+                        </thead>
+                        <tbody>${renderReportsTableRows(alertReports)}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        bindReportImagePreviews(document.getElementById("contentPanels"));
 
     // 5. LAPORAN / SENARAI KES DISIPLIN (DENGAN PENAPIS BULAN, KATEGORI, BLOK, JABATAN)
     } else if (panelName === "laporan") {
@@ -904,6 +938,10 @@ export function createPanelRouter(deps) {
                                     <option value="Amaran Kedua">Amaran Kedua</option>
                                     <option value="Amaran Terakhir">Amaran Terakhir</option>
                                 </select>
+                                <label style="display:flex; align-items:center; gap:8px; margin-top:10px; font-weight:600;">
+                                    <input type="checkbox" id="reportTindakanAmaranInput">
+                                    Hantar kepada Ketua Warden untuk tindakan amaran
+                                </label>
                             </div>
                             <button type="submit" class="btn btn-primary">Simpan Laporan</button>
                         </div>

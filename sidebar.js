@@ -4,11 +4,16 @@ export function renderSidebarNavigation(role, loadPanelContent, logoutUser, open
 
     let navHTML = "";
 
-    if (role === 'warden') {
+    const isWarden = role === 'warden' || role === 'ketua_warden';
+
+    if (isWarden) {
         navHTML += `<button class="nav-item active" data-panel="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</button>`;
         navHTML += `<button class="nav-item" data-panel="senaraiKes"><i class="fas fa-file-medical"></i> Daftar Kes</button>`;
         navHTML += `<button class="nav-item" data-panel="senaraiPelajar"><i class="fas fa-users"></i> Status Pelajar</button>`;
         navHTML += `<button class="nav-item" data-panel="laporan"><i class="fas fa-plus-circle"></i> Laporan Kes</button>`;
+        if (role === 'ketua_warden') {
+            navHTML += `<button class="nav-item" data-panel="tindakanAmaran"><i class="fas fa-exclamation-triangle"></i> Tindakan Amaran</button>`;
+        }
         navHTML += `<button class="nav-item" data-panel="resetPassword"><i class="fas fa-key"></i> Reset Kata Laluan</button>`;
     } else if (role === 'admin') {
         navHTML += `<button class="nav-item active" data-panel="adminPanel"><i class="fas fa-user-shield"></i> Admin</button>`;
@@ -18,7 +23,7 @@ export function renderSidebarNavigation(role, loadPanelContent, logoutUser, open
 
     navMenu.innerHTML = navHTML;
 
-    if (role === 'warden' || role === 'admin') {
+    if (isWarden || role === 'admin') {
         const changePasswordBtn = document.createElement('button');
         changePasswordBtn.className = 'nav-item change-password-btn';
         changePasswordBtn.innerHTML = '<i class="fas fa-key"></i> Tukar Kata Laluan';

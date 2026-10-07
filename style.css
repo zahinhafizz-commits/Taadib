@@ -2049,10 +2049,11 @@ select option{background:#10172a;color:#fff}
 }
 .login-card .login-brand-logo img {
     display: block;
-    width: 140px;
-    height: auto;
+    width: 100px !important;
+    height: auto !important;
+    max-width: 100px !important;
     object-fit: contain;
-    filter: drop-shadow(0 14px 28px rgba(0,0,0,.20));
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,.15));
     transition: transform .35s ease, filter .35s ease;
 }
 .login-card .login-brand-logo:hover img {

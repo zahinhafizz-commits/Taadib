@@ -1491,7 +1491,7 @@ body { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Se
 .main-content {
     min-width: 0;
     background: var(--td-bg);
-    padding: 28px 34px 50px;
+    padding: 0px 34px 50px;
 }
 .page-header {
     position: sticky;
@@ -2125,33 +2125,6 @@ select option{background:#10172a;color:#fff}
 #loginScreen .login-card {
     margin: 20px auto !important;
     max-height: none !important;
-}
-/* =====================================================
-   STICKY PANEL HEADER - FIX TOP POSITION
-   ===================================================== */
-
-.panel-header,
-.page-header {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 9999 !important;
-
-    margin: -28px -34px 28px !important;
-    padding-top: 16px !important;
-    padding-bottom: 16px !important;
-
-    background: #ffffff !important;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
-}
-
-/* Make sure old content cannot visually appear through header */
-.panel-header::before,
-.page-header::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: #ffffff;
-    z-index: -1;
 }
 
 @keyframes brandLogoIn {

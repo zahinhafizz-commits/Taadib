@@ -2126,17 +2126,32 @@ select option{background:#10172a;color:#fff}
     margin: 20px auto !important;
     max-height: none !important;
 }
-/* ===== STICKY PAGE HEADER ===== */
+/* =====================================================
+   STICKY PANEL HEADER - FIX TOP POSITION
+   ===================================================== */
 
 .panel-header,
 .page-header {
     position: sticky !important;
     top: 0 !important;
-    z-index: 100 !important;
+    z-index: 9999 !important;
+
     margin-top: 0 !important;
     padding-top: 16px !important;
     padding-bottom: 16px !important;
+
     background: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Make sure old content cannot visually appear through header */
+.panel-header::before,
+.page-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #ffffff;
+    z-index: -1;
 }
 
 @keyframes brandLogoIn {

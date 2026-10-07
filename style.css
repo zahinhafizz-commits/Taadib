@@ -2141,14 +2141,18 @@ select option{background:#10172a;color:#fff}
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
 }
 /* ===== MOBILE HEADER FIX ===== */
+/* ===== MOBILE HEADER - BEHIND SIDEBAR ===== */
 @media (max-width: 700px) {
     .page-header,
     .panel-header {
         position: relative !important;
         top: auto !important;
-        z-index: 10 !important;
-        margin: -22px -18px 22px !important;
-        padding: 18px !important;
+        z-index: 1 !important;
+    }
+
+    .sidebar {
+        position: relative !important;
+        z-index: 100 !important;
     }
 }
 

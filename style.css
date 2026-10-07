@@ -1767,3 +1767,274 @@ select option{background:#10172a;color:#fff}
   .dashboard-wrapper{display:block!important}.sidebar{height:auto;min-height:72px;position:sticky!important;top:0;flex-direction:row;align-items:center;overflow-x:auto}.sidebar .logo{margin:0}.nav-menu{flex-direction:row;overflow-x:auto}.nav-item{min-width:48px}.main-content{height:auto;min-height:calc(100vh - 72px)}.login-card{padding:30px 22px!important}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}
+
+/* ==========================================================
+   TA'DIB — PRESENTATION EDITION v3
+   LIGHT WORKSPACE + DARK SIDEBAR
+   Keeps the premium login while restoring readable white
+   workspace panels after authentication.
+   ========================================================== */
+:root{
+  --td-workspace:#f5f7fb;
+  --td-surface:#ffffff;
+  --td-surface-soft:#fbfcff;
+  --td-ink:#20243a;
+  --td-ink-2:#454b63;
+  --td-muted-light:#7a8198;
+  --td-line:#e6e9f1;
+  --td-accent:#7657e8;
+  --td-accent-2:#8b5cf6;
+  --td-cyan:#20b9d4;
+  --td-shadow-light:0 14px 38px rgba(30,36,65,.07);
+}
+
+/* Logged-in workspace: white/light, never white text on white */
+#dashboardScreen,
+#dashboardScreen .dashboard-wrapper,
+#dashboardScreen .main-content{
+  background:var(--td-workspace)!important;
+  color:var(--td-ink)!important;
+}
+
+#dashboardScreen .main-content{
+  background:
+    radial-gradient(circle at 92% 0%,rgba(118,87,232,.055),transparent 24%),
+    var(--td-workspace)!important;
+}
+
+#dashboardScreen .page-header{
+  background:rgba(255,255,255,.92)!important;
+  border-bottom:1px solid var(--td-line)!important;
+  box-shadow:0 8px 24px rgba(30,36,65,.045)!important;
+}
+
+#dashboardScreen .page-header h2,
+#dashboardScreen .page-header h2 span{
+  color:var(--td-ink)!important;
+}
+#dashboardScreen .page-header h2 i{color:var(--td-accent)!important}
+#dashboardScreen .page-header .sub{
+  color:#696f86!important;
+  background:#f0edff!important;
+  border:1px solid #e2dcff!important;
+}
+
+/* Real generated panels use card-box/stat-card */
+#dashboardScreen .card-box,
+#dashboardScreen .stat-card,
+#dashboardScreen .merit-modal-card,
+#dashboardScreen .report-status-card{
+  color:var(--td-ink)!important;
+  background:var(--td-surface)!important;
+  border:1px solid var(--td-line)!important;
+  box-shadow:var(--td-shadow-light)!important;
+  backdrop-filter:none!important;
+}
+
+#dashboardScreen .card-box,
+#dashboardScreen .stat-card{
+  position:relative;
+  overflow:hidden;
+  animation:tdPanelIn .55s cubic-bezier(.2,.75,.25,1) both;
+}
+
+#dashboardScreen .card-box::before,
+#dashboardScreen .stat-card::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--td-accent),var(--td-cyan),transparent);
+  opacity:.65;
+  transform:translateX(-100%);
+  transition:transform .7s ease;
+}
+#dashboardScreen .card-box:hover::before,
+#dashboardScreen .stat-card:hover::before{transform:translateX(100%)}
+
+#dashboardScreen .card-box:hover,
+#dashboardScreen .stat-card:hover{
+  transform:translateY(-4px)!important;
+  border-color:#d9d3fa!important;
+  box-shadow:0 20px 48px rgba(48,42,90,.11)!important;
+}
+
+/* Correct typography throughout white panels */
+#dashboardScreen .card-box h1,
+#dashboardScreen .card-box h2,
+#dashboardScreen .card-box h3,
+#dashboardScreen .card-box h4,
+#dashboardScreen .card-box h5,
+#dashboardScreen .card-box h6,
+#dashboardScreen .stat-card h1,
+#dashboardScreen .stat-card h2,
+#dashboardScreen .stat-card h3,
+#dashboardScreen .stat-card h4,
+#dashboardScreen .stat-card h5,
+#dashboardScreen .stat-card h6{
+  color:var(--td-ink)!important;
+}
+
+#dashboardScreen .card-box p,
+#dashboardScreen .card-box label,
+#dashboardScreen .profile-field,
+#dashboardScreen .profile-field > div,
+#dashboardScreen .merit-other-tier-description,
+#dashboardScreen .stat-card .stat-info .label{
+  color:var(--td-ink-2)!important;
+}
+
+#dashboardScreen .stat-card .stat-info .number{
+  color:#242840!important;
+  font-size:27px!important;
+  font-weight:850!important;
+}
+
+/* Tables: crisp white, dark readable text */
+#dashboardScreen .table-wrapper{
+  background:#fff!important;
+  border:1px solid #e3e6ef!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9)!important;
+}
+#dashboardScreen table{
+  color:#30364d!important;
+  background:#fff!important;
+}
+#dashboardScreen thead,
+#dashboardScreen thead tr{
+  background:#f5f3fc!important;
+}
+#dashboardScreen th{
+  color:#656b82!important;
+  background:#f5f3fc!important;
+  border-bottom:1px solid #e4e1ef!important;
+}
+#dashboardScreen td{
+  color:#3e455c!important;
+  background:#fff!important;
+  border-bottom:1px solid #edf0f5!important;
+}
+#dashboardScreen tbody tr{
+  transition:background .2s ease,transform .2s ease,box-shadow .2s ease!important;
+}
+#dashboardScreen tbody tr:hover td{
+  background:#faf9ff!important;
+}
+
+/* Forms inside dashboard remain readable */
+#dashboardScreen input,
+#dashboardScreen select,
+#dashboardScreen textarea,
+#dashboardScreen .form-control{
+  background:#fff!important;
+  color:#292e44!important;
+  border:1px solid #dfe3ec!important;
+}
+#dashboardScreen input::placeholder,
+#dashboardScreen textarea::placeholder{color:#9aa1b3!important}
+#dashboardScreen input:focus,
+#dashboardScreen select:focus,
+#dashboardScreen textarea:focus,
+#dashboardScreen .form-control:focus{
+  border-color:#9a84ee!important;
+  box-shadow:0 0 0 4px rgba(118,87,232,.10)!important;
+}
+#dashboardScreen select option{background:#fff;color:#292e44}
+
+/* Buttons keep purple/cyan premium identity */
+#dashboardScreen .btn-primary,
+#dashboardScreen button.btn-primary{
+  color:#fff!important;
+  background:linear-gradient(110deg,#6947d9,#8b5cf6,#16b7d1,#8b5cf6)!important;
+  background-size:260% 100%!important;
+  border:0!important;
+  box-shadow:0 9px 22px rgba(118,87,232,.20)!important;
+  animation:tdButtonGradient 6s linear infinite;
+}
+#dashboardScreen .btn-primary:hover{box-shadow:0 14px 30px rgba(118,87,232,.28)!important}
+
+/* Pagination */
+#dashboardScreen .pagination-btn{
+  color:#5f45b7!important;
+  background:#f0edff!important;
+  border:1px solid #e2dcff!important;
+}
+#dashboardScreen .pagination-btn:hover,
+#dashboardScreen .pagination-btn.active{
+  color:#fff!important;
+  background:#7657e8!important;
+}
+
+/* Status badges stay colorful but readable */
+#dashboardScreen .status-badge,
+#dashboardScreen .badge,
+#dashboardScreen .pill{font-weight:750}
+
+/* Sidebar remains dark and premium */
+#dashboardScreen .sidebar{
+  background:linear-gradient(180deg,#0c1122 0%,#10152a 58%,#0a0f1e 100%)!important;
+  color:#e8ecf7!important;
+}
+#dashboardScreen .sidebar .logo h1,
+#dashboardScreen .sidebar .user-info .name{color:#fff!important}
+#dashboardScreen .sidebar .logo h1 span{color:#a78bfa!important}
+#dashboardScreen .sidebar .user-info .role{color:#9ba3bc!important}
+#dashboardScreen .nav-item{color:#9ca5be!important}
+#dashboardScreen .nav-item i{color:#707a97!important}
+#dashboardScreen .nav-item.active{
+  color:#fff!important;
+  background:linear-gradient(100deg,rgba(118,87,232,.32),rgba(32,185,212,.08))!important;
+  border-color:rgba(139,92,246,.26)!important;
+}
+#dashboardScreen .nav-item.active i{color:#c4b5fd!important}
+#dashboardScreen .nav-item:not(.active):hover{color:#fff!important;background:rgba(255,255,255,.055)!important}
+
+/* Animation system */
+@keyframes tdPanelIn{
+  from{opacity:0;transform:translateY(18px) scale(.985);filter:blur(3px)}
+  to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes tdButtonGradient{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+@keyframes tdRowIn{
+  from{opacity:0;transform:translateX(-8px)}
+  to{opacity:1;transform:translateX(0)}
+}
+
+/* Stagger cards and table rows for a visible entrance animation */
+#dashboardScreen #contentPanels > *:nth-child(1){animation-delay:.02s}
+#dashboardScreen #contentPanels > *:nth-child(2){animation-delay:.08s}
+#dashboardScreen #contentPanels > *:nth-child(3){animation-delay:.14s}
+#dashboardScreen #contentPanels > *:nth-child(4){animation-delay:.20s}
+#dashboardScreen #contentPanels > *:nth-child(5){animation-delay:.26s}
+#dashboardScreen .card-box tbody tr:nth-child(1){animation:tdRowIn .35s .08s both}
+#dashboardScreen .card-box tbody tr:nth-child(2){animation:tdRowIn .35s .13s both}
+#dashboardScreen .card-box tbody tr:nth-child(3){animation:tdRowIn .35s .18s both}
+#dashboardScreen .card-box tbody tr:nth-child(4){animation:tdRowIn .35s .23s both}
+#dashboardScreen .card-box tbody tr:nth-child(5){animation:tdRowIn .35s .28s both}
+#dashboardScreen .card-box tbody tr:nth-child(6){animation:tdRowIn .35s .33s both}
+#dashboardScreen .card-box tbody tr:nth-child(7){animation:tdRowIn .35s .38s both}
+#dashboardScreen .card-box tbody tr:nth-child(8){animation:tdRowIn .35s .43s both}
+
+/* Keep analytics progress bars alive with a subtle sweep */
+#dashboardScreen .card-box td div[style*="width"]{
+  animation:tdProgressSweep 1.2s ease both;
+}
+@keyframes tdProgressSweep{
+  from{transform:scaleX(0);transform-origin:left}
+  to{transform:scaleX(1);transform-origin:left}
+}
+
+/* Nav icon micro interaction */
+#dashboardScreen .nav-item:hover i{transform:scale(1.08);transition:transform .2s ease}
+#dashboardScreen .nav-item.active i{animation:tdIconFloat 2.6s ease-in-out infinite}
+@keyframes tdIconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+
+@media(prefers-reduced-motion:reduce){
+  #dashboardScreen *,#dashboardScreen *::before,#dashboardScreen *::after{
+    animation:none!important;transition:none!important;
+  }
+}

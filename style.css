@@ -2126,17 +2126,17 @@ select option{background:#10172a;color:#fff}
     margin: 20px auto !important;
     max-height: none !important;
 }
-/* ===== STUDENT PAGE HEADER POSITION ===== */
+/* ===== STICKY PAGE HEADER ===== */
 
-#rekodSaya .panel-header,
-#rekodSaya .page-header {
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
+.panel-header,
+.page-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
     margin-top: 0 !important;
-}
-
-#rekodSaya {
-    padding-top: 0 !important;
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+    background: #ffffff !important;
 }
 
 @keyframes brandLogoIn {

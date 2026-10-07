@@ -2140,6 +2140,17 @@ select option{background:#10172a;color:#fff}
     background: #ffffff !important;
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
 }
+/* ===== MOBILE HEADER FIX ===== */
+@media (max-width: 700px) {
+    .page-header,
+    .panel-header {
+        position: relative !important;
+        top: auto !important;
+        z-index: 10 !important;
+        margin: -22px -18px 22px !important;
+        padding: 18px !important;
+    }
+}
 
 @keyframes brandLogoIn {
     from { opacity: 0; transform: translateY(-14px) scale(.96); }
@@ -2148,5 +2159,5 @@ select option{background:#10172a;color:#fff}
 
 @media (max-width: 700px) {
     .login-card .login-brand-logo { width: min(100%, 280px); }
-    .sidebar .logo img { width: 145px; }
+    .sidebar .logo img { width: 110px; }
 }

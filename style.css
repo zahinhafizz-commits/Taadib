@@ -2041,7 +2041,7 @@ select option{background:#10172a;color:#fff}
 
 /* ===== TA'DIB REAL BRAND LOGO ===== */
 .login-card .login-brand-logo {
-    width: min(100%, 330px);
+    width: min(100%, 140px);
     margin: 0 auto 18px;
     display: flex;
     justify-content: center;

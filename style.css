@@ -2049,7 +2049,7 @@ select option{background:#10172a;color:#fff}
 }
 .login-card .login-brand-logo img {
     display: block;
-    width: 100%;
+    width: 140px;
     height: auto;
     object-fit: contain;
     filter: drop-shadow(0 14px 28px rgba(0,0,0,.20));

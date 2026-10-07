@@ -2136,7 +2136,7 @@ select option{background:#10172a;color:#fff}
     top: 0 !important;
     z-index: 9999 !important;
 
-    margin-top: 0 !important;
+    margin: -28px -34px 28px !important;
     padding-top: 16px !important;
     padding-bottom: 16px !important;
 

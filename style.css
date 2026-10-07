@@ -2070,6 +2070,26 @@ select option{background:#10172a;color:#fff}
     padding: 2px 6px 20px;
     margin-bottom: 8px;
 }
+/* ===== TA'DIB LOGIN LOGO SIZE FIX ===== */
+
+#loginScreen .logo-icon {
+    width: 160px !important;
+    height: 160px !important;
+    margin: 0 auto 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+}
+
+#loginScreen .logo-icon .taadib-main-logo {
+    width: 160px !important;
+    height: 160px !important;
+    max-width: 160px !important;
+    max-height: 160px !important;
+    object-fit: contain !important;
+    display: block !important;
+}
 .sidebar .logo img {
     width: 170px;
     max-width: 100%;

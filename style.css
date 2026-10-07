@@ -2105,6 +2105,40 @@ select option{background:#10172a;color:#fff}
 }
 .sidebar .logo h1 { display:none !important; }
 
+/* ===== LOGIN SCREEN SCROLL FIX ===== */
+
+#loginScreen {
+    min-height: 100dvh !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box;
+    padding: 40px 20px !important;
+    scrollbar-width: none;
+}
+
+#loginScreen::-webkit-scrollbar {
+    display: none;
+}
+
+#loginScreen .login-card {
+    margin: 20px auto !important;
+    max-height: none !important;
+}
+/* ===== STUDENT PAGE HEADER POSITION ===== */
+
+#rekodSaya .panel-header,
+#rekodSaya .page-header {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    margin-top: 0 !important;
+}
+
+#rekodSaya {
+    padding-top: 0 !important;
+}
+
 @keyframes brandLogoIn {
     from { opacity: 0; transform: translateY(-14px) scale(.96); }
     to { opacity: 1; transform: translateY(0) scale(1); }

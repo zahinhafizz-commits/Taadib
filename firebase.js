@@ -202,67 +202,20 @@ async function signInWithMatrixOrEmail(identity, password) {
         throw new Error('Masukkan no. matriks.');
     }
 
-    const student = await getStudentByMatrixID(matrix);
-    if (!student) {
-        throw new Error('No. matriks tidak dijumpai dalam pangkalan data pelajar.');
-    }
-
-    const userQuery = query(collection(db, 'users'), where('no_matriks', '==', matrix), limit(1));
-    const userMatches = await getDocs(userQuery);
-    const storedPassword = userMatches.empty
-        ? STUDENT_BASE_PASSWORD
-        : (userMatches.docs[0].data().password || STUDENT_BASE_PASSWORD);
-
     const internalStudentEmail = `${matrix.toLowerCase()}@tadib.com`;
-    const passwordCandidates = [
-        password,
-        storedPassword,
-        STUDENT_BASE_PASSWORD
-    ].filter((value, index, arr) => value && arr.indexOf(value) === index);
+    await signInWithEmailAndPassword(auth, internalStudentEmail, password);
 
-    let lastError = null;
-
-    for (const candidate of passwordCandidates) {
-        try {
-            await signInWithEmailAndPassword(auth, internalStudentEmail, candidate);
-            return;
-        } catch (err) {
-            lastError = err;
-            console.error('Student matrix sign-in failed with candidate:', candidate, err);
-
-            if (err?.code === 'auth/user-not-found') {
-                try {
-                    const credential = await createUserWithEmailAndPassword(auth, internalStudentEmail, STUDENT_BASE_PASSWORD);
-                    await setDoc(doc(db, 'users', credential.user.uid), {
-                        ...student,
-                        no_matriks: matrix,
-                        role: 'pelajar',
-                        password: STUDENT_BASE_PASSWORD,
-                        passwordChanged: false
-                    });
-                    return;
-                } catch (createErr) {
-                    console.error('Student first-user creation failed:', createErr);
-                    if (createErr?.code === 'auth/email-already-in-use') {
-                        try {
-                            await signInWithEmailAndPassword(auth, internalStudentEmail, STUDENT_BASE_PASSWORD);
-                            return;
-                        } catch {
-                            // Continue to the next password candidate.
-                        }
-                    } else {
-                        throw createErr;
-                    }
-                }
-            }
-
-            if (err?.code !== 'auth/wrong-password' && err?.code !== 'auth/user-not-found') {
-                throw err;
-            }
+    try {
+        const student = await getStudentByMatrixID(matrix);
+        if (!student) {
+            throw Object.assign(new Error('No. matriks tidak dijumpai dalam pangkalan data pelajar.'), {
+                code: 'student/not-found'
+            });
         }
+    } catch (err) {
+        await signOut(auth);
+        throw err;
     }
-
-    throw lastError || new Error('Log masuk gagal.');
 }
 
 function createStudentAccount(matrix, password) {

@@ -107,6 +107,7 @@ export function createDataFetchingService({ db, state, getJabatanFromMatrix, syn
             }
         } catch (err) {
             console.error("Firestore student lookup error:", err);
+            throw err;
         }
         return null;
     }

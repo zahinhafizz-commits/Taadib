@@ -2130,7 +2130,7 @@ select option{background:#10172a;color:#fff}
 .panel-header,
 .page-header {
     position: sticky !important;
-    top: -28px !important;
+    top: -32px !important;
     z-index: 9999 !important;
 
     margin-top: 0 !important;

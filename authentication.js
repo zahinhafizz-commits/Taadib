@@ -353,6 +353,7 @@ changePasswordForm?.addEventListener('submit', async (event) => {
         return;
     }
 
+    let passwordSetupRollbackFailed = false;
     try {
         const submitButton = changePasswordForm.querySelector('button[type="submit"]');
         if (submitButton) {
@@ -363,22 +364,51 @@ changePasswordForm?.addEventListener('submit', async (event) => {
         if (!currentUser?.email) throw new Error('Akaun pengguna tidak dijumpai.');
         const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
         await reauthenticateWithCredential(currentUser, credential);
-        await updatePassword(currentUser, newPassword);
-        const passwordUpdate = { passwordChanged: true };
+        const passwordUpdate = { passwordChanged: true, password: deleteField() };
         if (state.currentRole !== 'pelajar') passwordUpdate.staffPasswordSetup = true;
 
-        let userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-        if (!userDoc.exists() && auth.currentUser?.email) {
-            userDoc = await getDoc(doc(db, 'users', auth.currentUser.email));
+        const userRef = doc(db, 'users', currentUser.uid);
+        let userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+            userDoc = await getDoc(doc(db, 'users', currentUser.email));
         }
+
+        let rollbackPasswordSetup;
         if (userDoc.exists()) {
-            await updateDoc(userDoc.ref, { ...passwordUpdate, password: deleteField() });
+            const previousData = userDoc.data();
+            rollbackPasswordSetup = {
+                passwordChanged: Object.hasOwn(previousData, 'passwordChanged')
+                    ? previousData.passwordChanged
+                    : deleteField()
+            };
+            if (state.currentRole !== 'pelajar') {
+                rollbackPasswordSetup.staffPasswordSetup = Object.hasOwn(previousData, 'staffPasswordSetup')
+                    ? previousData.staffPasswordSetup
+                    : deleteField();
+            }
+            await updateDoc(userDoc.ref, passwordUpdate);
         } else {
-            await setDoc(doc(db, 'users', auth.currentUser.uid), {
-                email: auth.currentUser?.email || '',
+            rollbackPasswordSetup = {
+                passwordChanged: false,
+                ...(state.currentRole !== 'pelajar' ? { staffPasswordSetup: false } : {})
+            };
+            await setDoc(userRef, {
+                email: currentUser.email,
                 role: state.currentRole,
                 ...passwordUpdate
             }, { merge: true });
+        }
+
+        try {
+            await updatePassword(currentUser, newPassword);
+        } catch (error) {
+            try {
+                await updateDoc(userDoc.exists() ? userDoc.ref : userRef, rollbackPasswordSetup);
+            } catch (rollbackError) {
+                console.error('Password setup metadata rollback failed:', rollbackError);
+                passwordSetupRollbackFailed = true;
+            }
+            throw error;
         }
 
         state.currentUserData = state.currentUserData || {};
@@ -393,6 +423,10 @@ changePasswordForm?.addEventListener('submit', async (event) => {
             submitButton.innerHTML = '<i class="fas fa-save"></i> Simpan Kata Laluan';
         }
         console.error('Password update failed:', err);
+        if (passwordSetupRollbackFailed) {
+            showAuthError(changePasswordError, changePasswordErrorText, 'Kata laluan gagal dikemas kini dan status profil tidak dapat dipulihkan. Sila hubungi pentadbir sebelum mencuba lagi.');
+            return;
+        }
         if (err?.code === 'auth/requires-recent-login') {
             showAuthError(changePasswordError, changePasswordErrorText, 'Sesi log masuk telah tamat. Sila log masuk semula sebelum menukar kata laluan.');
             await signOut(auth);
@@ -400,7 +434,7 @@ changePasswordForm?.addEventListener('submit', async (event) => {
         }
 
         const message = err?.code === 'permission-denied'
-            ? 'Akses pangkalan data ditolak. Sila pastikan dokumen pengguna mempunyai kebenaran kemas kini.'
+            ? 'Status pertukaran kata laluan tidak dapat disimpan. Sila minta pentadbir menerbitkan peraturan Firestore terkini.'
             : err?.code === 'auth/wrong-password' || err?.code === 'auth/invalid-credential'
                 ? 'Kata laluan semasa tidak betul.'
             : err?.code === 'auth/weak-password'

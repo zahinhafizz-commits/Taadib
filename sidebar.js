@@ -2,6 +2,27 @@ export function renderSidebarNavigation(role, loadPanelContent, logoutUser, open
     const navMenu = document.getElementById("navMenu");
     if (!navMenu) return;
 
+    async function loadPanel(panelName) {
+        try {
+            await loadPanelContent(panelName);
+        } catch (error) {
+            console.error(`Panel loading failed for ${panelName}:`, error);
+            const contentPanel = document.getElementById("contentPanels");
+            if (!contentPanel) return;
+
+            const card = document.createElement("div");
+            card.className = "card-box";
+            const heading = document.createElement("h3");
+            heading.textContent = "Gagal memuatkan panel";
+            const message = document.createElement("p");
+            message.textContent = error?.code === "permission-denied"
+                ? "Akses ditolak. Pastikan peraturan Firestore telah diterbitkan dan akaun anda mempunyai peranan staf yang dibenarkan."
+                : error?.message || "Ralat tidak diketahui. Sila cuba lagi.";
+            card.append(heading, message);
+            contentPanel.replaceChildren(card);
+        }
+    }
+
     let navHTML = "";
 
     const isWarden = role === 'warden' || role === 'ketua_warden';
@@ -51,7 +72,7 @@ export function renderSidebarNavigation(role, loadPanelContent, logoutUser, open
             const targetBtn = e.currentTarget;
             targetBtn.classList.add("active");
             if (typeof loadPanelContent === 'function') {
-                loadPanelContent(targetBtn.getAttribute("data-panel"));
+                loadPanel(targetBtn.getAttribute("data-panel"));
             }
         });
     });

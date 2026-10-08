@@ -76,7 +76,7 @@
             <div class="login-card">
                 <div class="logo-icon"><i class="fas fa-key"></i></div>
                 <h2>Reset Kata Laluan</h2>
-                <p class="subtitle">Masukkan no. matriks anda. Permintaan reset akan dihantar kepada warden untuk kelulusan.</p>
+                <p class="subtitle">Masukkan no. matriks pelajar atau emel staf. Pautan reset akan dihantar ke emel akaun.</p>
 
                 <div id="resetPasswordError" class="error-msg">
                     <i class="fas fa-exclamation-circle"></i>
@@ -89,10 +89,10 @@
 
                 <form id="resetPasswordForm">
                     <div class="form-group">
-                        <label><i class="fas fa-id-card"></i> No. Matriks</label>
+                        <label><i class="fas fa-id-card"></i> No. Matriks / Emel</label>
                         <input type="text" id="resetPasswordIdentity" placeholder="Contoh: 18DDT21F1001" autocomplete="username" required />
                     </div>
-                    <button type="submit" class="btn-login"><i class="fas fa-paper-plane"></i> Hantar Permintaan</button>
+                    <button type="submit" class="btn-login"><i class="fas fa-paper-plane"></i> Hantar Pautan Reset</button>
                 </form>
                 <p class="auth-switch"><a href="#" id="showLoginFromResetLink"><i class="fas fa-arrow-left"></i> Kembali ke log masuk</a></p>
             </div>
@@ -125,25 +125,14 @@
                     <div class="form-group">
                         <label><i class="fas fa-lock"></i> Kata Laluan Baharu</label>
                         <div class="password-input-wrap">
-                            <input type="password" id="newPassword" minlength="16" autocomplete="new-password" required />
+                            <input type="password" id="newPassword" minlength="6" autocomplete="new-password" required />
                             <button type="button" class="password-toggle" data-password-target="newPassword" aria-label="Tunjukkan kata laluan"><i class="fas fa-eye"></i></button>
                         </div>
                     </div>
-                    <ul class="password-requirements" id="passwordRequirements" aria-label="Syarat kata laluan" aria-live="polite">
-                        <li data-password-rule="length"><span class="requirement-status">Belum dipenuhi</span><span>Sekurang-kurangnya 16 aksara</span></li>
-                        <li data-password-rule="uppercase"><span class="requirement-status">Belum dipenuhi</span><span>Huruf besar</span></li>
-                        <li data-password-rule="lowercase"><span class="requirement-status">Belum dipenuhi</span><span>Huruf kecil</span></li>
-                        <li data-password-rule="number"><span class="requirement-status">Belum dipenuhi</span><span>Nombor</span></li>
-                        <li data-password-rule="symbol"><span class="requirement-status">Belum dipenuhi</span><span>Simbol khas</span></li>
-                        <li data-password-rule="notCurrent"><span class="requirement-status">Belum dipenuhi</span><span>Berbeza daripada kata laluan semasa</span></li>
-                        <li data-password-rule="personal"><span class="requirement-status">Belum dipenuhi</span><span>Tidak mengandungi nama, no. matriks atau tarikh lahir anda</span></li>
-                        <li data-password-rule="patterns"><span class="requirement-status">Belum dipenuhi</span><span>Tiada kata laluan lazim atau corak mudah diteka</span></li>
-                    </ul>
-                    <p class="password-uniqueness-note">Gunakan kata laluan yang berbeza untuk setiap akaun. Jangan gunakan semula kata laluan daripada akaun lain.</p>
                     <div class="form-group">
                         <label><i class="fas fa-lock"></i> Sahkan Kata Laluan Baharu</label>
                         <div class="password-input-wrap">
-                            <input type="password" id="confirmNewPassword" minlength="16" autocomplete="new-password" required />
+                            <input type="password" id="confirmNewPassword" minlength="6" autocomplete="new-password" required />
                             <button type="button" class="password-toggle" data-password-target="confirmNewPassword" aria-label="Tunjukkan kata laluan"><i class="fas fa-eye"></i></button>
                         </div>
                     </div>

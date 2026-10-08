@@ -16,7 +16,7 @@ export function renderSidebarNavigation(role, loadPanelContent, logoutUser, open
         }
         navHTML += `<button class="nav-item" data-panel="resetPassword"><i class="fas fa-key"></i> Reset Kata Laluan</button>`;
     } else if (role === 'admin') {
-        navHTML += `<button class="nav-item active" data-panel="admin"><i class="fas fa-user-shield"></i> Admin</button>`;
+        navHTML += `<button class="nav-item active" data-panel="adminPanel"><i class="fas fa-user-shield"></i> Admin</button>`;
     } else {
         navHTML += `<button class="nav-item active" data-panel="rekodSaya"><i class="fas fa-user-shield"></i> Rekod Disiplin Saya</button>`;
     }

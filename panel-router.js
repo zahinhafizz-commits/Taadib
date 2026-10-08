@@ -85,71 +85,66 @@ export function createPanelRouter(deps) {
 
     if (!contentPanel) return;
 
-    if (panelName === 'admin' || panelName === 'adminPanel') {
-        if (pageTitleText) pageTitleText.textContent = 'Pentadbir / Peruntukan Peranan';
-
-        const usersSnapshot = await getDocs(collection(db, 'users'));
-        const staffAccounts = usersSnapshot.docs
-            .map(userDoc => ({ id: userDoc.id, ...userDoc.data() }))
-            .filter(account => {
-                const role = (account.role || '').toString().toLowerCase();
-                return ['warden', 'ketua_warden', 'admin', 'rollcall_admin', 'hep', 'supervisor'].includes(role);
-            })
-            .sort((a, b) => (a.email || a.nama || '').localeCompare(b.email || b.nama || ''));
+    if (panelName === "adminPanel") {
+        if (pageTitleText) pageTitleText.textContent = "Pentadbir Roll Call";
 
         contentPanel.innerHTML = `
             <div class="card-box">
-                <h3>Peruntukan Peranan Warden / HEP</h3>
-                <p style="margin: 10px 0 18px; color: #6d5a88;">Senarai akaun warden dan HEP yang boleh diberikan peranan Ketua Warden.</p>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nama</th>
-                                <th>Emel</th>
-                                <th>Peranan Semasa</th>
-                                <th>Tindakan</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${staffAccounts.length ? staffAccounts.map(account => `
-                                <tr>
-                                    <td>${account.nama || account.name || '-'}</td>
-                                    <td>${account.email || '-'}</td>
-                                    <td>
-                                        <select class="form-control role-assign-select" data-user-id="${account.id}" aria-label="Pilih peranan">
-                                            <option value="warden" ${account.role === 'warden' ? 'selected' : ''}>Warden / HEP</option>
-                                            <option value="ketua_warden" ${account.role === 'ketua_warden' ? 'selected' : ''}>Ketua Warden</option>
-                                            <option value="admin" ${account.role === 'admin' ? 'selected' : ''}>Admin</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-primary save-role-btn" data-user-id="${account.id}"><i class="fas fa-save"></i> Simpan</button>
-                                    </td>
-                                </tr>
-                            `).join('') : '<tr><td colspan="4">Tiada akaun warden atau HEP dijumpai.</td></tr>'}
-                        </tbody>
-                    </table>
-                </div>
+                <h3>Tambah Roll Call Admin</h3>
+                <p style="margin: 10px 0 18px; color: #6d5a88;">Cipta akaun baru untuk roll call admin. Kata laluan akan ditetapkan kepada <strong>123456</strong>.</p>
+                <form id="createRollCallAdminForm" style="display: grid; gap: 16px; max-width: 520px;">
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">Nama Roll Call Admin</label>
+                        <input type="text" id="adminNameInput" class="form-control" placeholder="Contoh: Ahmad Rahman" required>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">Emel Roll Call Admin</label>
+                        <input type="email" id="adminEmailInput" class="form-control" placeholder="admin@tadib.com" required>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">Kata Laluan</label>
+                        <input type="text" id="adminPasswordInput" class="form-control" value="123456" readonly>
+                    </div>
+                    <div style="text-align: right;">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-user-plus"></i> Daftar Akaun</button>
+                    </div>
+                </form>
             </div>
         `;
 
-        contentPanel.querySelectorAll('.save-role-btn')?.forEach(button => {
-            button.addEventListener('click', async () => {
-                const userId = button.dataset.userId;
-                const select = contentPanel.querySelector(`select[data-user-id="${userId}"]`);
-                const nextRole = select?.value || 'warden';
-                if (!userId) return;
+        document.getElementById('createRollCallAdminForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
 
-                try {
-                    await updateDoc(doc(db, 'users', userId), { role: nextRole, updatedAt: new Date().toISOString() });
-                    showReportPopup('Peranan Dikemaskini', 'Peranan akaun telah berjaya dikemaskini.', 'success');
-                    loadPanelContent('admin');
-                } catch (error) {
-                    console.error('Role assignment failed:', error);
-                    showReportPopup('Gagal Kemaskini Peranan', 'Peranan tidak dapat dikemaskini. Sila cuba lagi.', 'error');
-                }
-            });
+            const adminName = document.getElementById('adminNameInput')?.value.trim();
+            const adminEmail = document.getElementById('adminEmailInput')?.value.trim();
+            const password = '123456';
+
+            if (!adminName || !adminEmail) {
+                showReportPopup('Data Tidak Lengkap', 'Sila isi nama dan emel roll call admin.', 'error');
+                return;
+            }
+
+            try {
+                const credential = await createUserWithEmailAndPassword(auth, adminEmail, password);
+                await setDoc(doc(db, 'users', credential.user.uid), {
+                    nama: adminName,
+                    email: adminEmail,
+                    role: 'rollcall_admin',
+                    passwordChanged: false,
+                    staffPasswordSetup: false,
+                    createdBy: currentUserData?.nama || 'Admin'
+                });
+
+                document.getElementById('createRollCallAdminForm')?.reset();
+                document.getElementById('adminPasswordInput').value = '123456';
+                showReportPopup('Akaun Berjaya Dicipta', `Akaun roll call admin ${adminName} telah berjaya ditambah. Kata laluan: 123456`, 'success');
+            } catch (err) {
+                console.error('Create roll call admin failed:', err);
+                const message = err.code === 'auth/email-already-in-use'
+                    ? 'Emel ini sudah digunakan.'
+                    : 'Gagal mencipta akaun roll call admin. Sila cuba lagi.';
+                showReportPopup('Gagal Mencipta Akaun', message, 'error');
+            }
         });
 
     // 1. PELAJAR: REKOD DISIPLIN SAYA
@@ -611,7 +606,7 @@ export function createPanelRouter(deps) {
                     <td>${req.status || 'pending'}</td>
                     <td>${req.requestedAt ? new Date(req.requestedAt).toLocaleString('ms-MY') : '-'}</td>
                     <td>
-                        ${req.status === 'pending' ? `<button type="button" class="btn btn-success approve-reset-btn" data-request-id="${req.id}"><i class="fas fa-check"></i> Luluskan</button>` : `<span class="badge">Diluluskan</span>`}
+                        ${req.status === 'pending' ? `<button type="button" class="btn btn-success approve-reset-btn" data-request-id="${req.id}"><i class="fas fa-check"></i> Approved</button>` : `<span class="badge">Approved</span>`}
                     </td>
                 </tr>
             `).join('')
@@ -619,10 +614,7 @@ export function createPanelRouter(deps) {
 
         contentPanel.innerHTML = `
             <div class="card-box">
-                <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
-                    <h3>Reset Kata Laluan Pelajar</h3>
-                    <button type="button" class="btn btn-secondary" id="refreshResetRequestsBtn" aria-label="Muat semula permintaan reset"><i class="fas fa-sync-alt"></i> Muat Semula</button>
-                </div>
+                <h3>Reset Kata Laluan Pelajar</h3>
                 <p style="margin: 10px 0 18px; color: #6d5a88;">Senarai permintaan reset kata laluan pelajar untuk kelulusan warden.</p>
                 <table class="table table-striped">
                     <thead>
@@ -639,22 +631,11 @@ export function createPanelRouter(deps) {
             </div>
         `;
 
-        contentPanel.querySelector('#refreshResetRequestsBtn')?.addEventListener('click', () => {
-            loadPanelContent('resetPassword');
-        });
-
         contentPanel.querySelectorAll('.approve-reset-btn')?.forEach(button => {
             button.addEventListener('click', async () => {
                 const requestId = button.dataset.requestId;
-                button.disabled = true;
-                try {
-                    await approveStudentPasswordReset(requestId);
-                    await loadPanelContent('resetPassword');
-                } catch (error) {
-                    console.error('Password reset approval failed:', error);
-                    window.alert('Permintaan gagal diluluskan. Sila cuba lagi atau hubungi pentadbir sistem.');
-                    button.disabled = false;
-                }
+                await approveStudentPasswordReset(requestId);
+                loadPanelContent('resetPassword');
             });
         });
 
@@ -759,7 +740,7 @@ export function createPanelRouter(deps) {
         if (pageTitleText) pageTitleText.textContent = "Tindakan Amaran";
         await fetchStudentList();
         await fetchReportsData();
-        const alertReports = reportsData.filter(report => report.tindakan_amaran === true || report.status_amaran === 'Amaran Terakhir');
+        const alertReports = reportsData.filter(report => report.tindakan_amaran === true);
 
         contentPanel.innerHTML = `
             <div class="card-box">

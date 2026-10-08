@@ -9,7 +9,6 @@ import {
     sendPasswordResetEmail,
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
 import { 
     getFirestore, 
     collection, 
@@ -20,7 +19,6 @@ import {
     setDoc,
     updateDoc,
     deleteDoc,
-    deleteField,
     query,
     where,
     limit
@@ -46,7 +44,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const functions = getFunctions(app);
 window.firebaseAuth = auth;
 
 // Global Variables
@@ -126,7 +123,7 @@ function normalizeMatrix(matrix) {
     return (matrix || '').toString().trim().replace(/\s+/g, '').toUpperCase();
 }
 
-async function saveStudentPassword(matrix, passwordChanged = false) {
+async function saveStudentPassword(matrix, password = STUDENT_BASE_PASSWORD, passwordChanged = false) {
     const cleanMatrix = normalizeMatrix(matrix);
     const userQuery = query(collection(db, 'users'), where('no_matriks', '==', cleanMatrix), limit(1));
     const matches = await getDocs(userQuery);
@@ -134,7 +131,7 @@ async function saveStudentPassword(matrix, passwordChanged = false) {
     if (!matches.empty) {
         const userDoc = matches.docs[0];
         await updateDoc(userDoc.ref, {
-            password: deleteField(),
+            password,
             passwordChanged,
             updatedAt: new Date().toISOString()
         });
@@ -143,6 +140,7 @@ async function saveStudentPassword(matrix, passwordChanged = false) {
 
     await setDoc(doc(db, 'users', cleanMatrix), {
         no_matriks: cleanMatrix,
+        password,
         passwordChanged,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -170,8 +168,27 @@ async function createStudentPasswordRequest(matrix) {
 }
 
 async function approveStudentPasswordReset(requestId) {
-    const approveRequest = httpsCallable(functions, 'approveStudentPasswordReset');
-    await approveRequest({ requestId });
+    const requestRef = doc(db, STUDENT_PASSWORD_RESET_REQUESTS_COLLECTION, requestId);
+    const requestSnap = await getDoc(requestRef);
+    if (!requestSnap.exists()) return;
+
+    const request = requestSnap.data();
+    const matrix = normalizeMatrix(request.no_matriks);
+
+    await saveStudentPassword(matrix, STUDENT_BASE_PASSWORD, false);
+
+    const requestUserQuery = query(collection(db, 'users'), where('no_matriks', '==', matrix), limit(1));
+    const userMatches = await getDocs(requestUserQuery);
+    if (!userMatches.empty) {
+        const userDoc = userMatches.docs[0];
+        await updateDoc(userDoc.ref, { passwordChanged: false });
+    }
+
+    await updateDoc(requestRef, {
+        status: 'approved',
+        approvedAt: new Date().toISOString(),
+        approvedBy: currentUserData?.nama || 'Warden'
+    });
 }
 
 async function getStudentPasswordResetRequests() {
@@ -225,6 +242,7 @@ async function createFirstTimeStudentPage(matrix) {
         ...student,
         no_matriks: cleanMatrix,
         role: 'pelajar',
+        password: STUDENT_BASE_PASSWORD,
         passwordChanged: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -650,7 +668,7 @@ const loadPanelContent = createPanelRouter({
     get allReportsData() { return allReportsData; },
     get studentReportsCache() { return studentReportsCache; },
     dataLoaded,
-    createUserWithEmailAndPassword, setDoc, addDoc, collection, getDocs, getDocs, updateDoc, deleteDoc, doc, showReportPopup,
+    createUserWithEmailAndPassword, setDoc, addDoc, collection, updateDoc, deleteDoc, doc, showReportPopup,
     getStudentByMatrixID, syncStudentMeritScores,
     fetchReportsData, fetchStudentList, getStudentPasswordResetRequests,
     approveStudentPasswordReset, getJabatanFromMatrix, getStatusBadgeClass,
@@ -700,7 +718,7 @@ setupAuthenticationHandlers({
     },
     auth, loginForm, usernameInput, passwordInput, loginError, errorText,
     signInWithMatrixOrEmail, staffLoginForm, staffLoginError, staffErrorText,
-    signInWithEmailAndPassword, createUserWithEmailAndPassword, showAuthError, sendPasswordResetEmail,
+    signInWithEmailAndPassword, showAuthError, sendPasswordResetEmail,
     resetPasswordForm, resetPasswordIdentityInput, resetPasswordError,
     resetPasswordSuccess, resetPasswordSuccessText, resetPasswordErrorText,
     createStudentPasswordRequest, getStudentByMatrixID, normalizeMatrix,

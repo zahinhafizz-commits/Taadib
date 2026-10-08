@@ -1252,42 +1252,6 @@ td {
     padding-right: 44px;
 }
 
-.password-requirements {
-    display: grid;
-    gap: 7px;
-    margin: -6px 0 12px;
-    padding: 12px;
-    list-style: none;
-    border: 1px solid #e2ebf3;
-    border-radius: 12px;
-    background: #f9fcff;
-    color: #52677a;
-    font-size: 12px;
-}
-
-.password-requirements li {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-}
-
-.requirement-status {
-    flex: 0 0 90px;
-    color: #8a5b4b;
-    font-weight: 600;
-}
-
-.password-requirements li.is-met .requirement-status {
-    color: #237a53;
-}
-
-.password-uniqueness-note {
-    margin: 0 0 18px;
-    color: #5e7e96;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
 .password-toggle {
     position: absolute;
     top: 50%;

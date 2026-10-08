@@ -126,29 +126,6 @@ function normalizeMatrix(matrix) {
     return (matrix || '').toString().trim().replace(/\s+/g, '').toUpperCase();
 }
 
-async function saveStudentPassword(matrix, passwordChanged = false) {
-    const cleanMatrix = normalizeMatrix(matrix);
-    const userQuery = query(collection(db, 'users'), where('no_matriks', '==', cleanMatrix), limit(1));
-    const matches = await getDocs(userQuery);
-
-    if (!matches.empty) {
-        const userDoc = matches.docs[0];
-        await updateDoc(userDoc.ref, {
-            password: deleteField(),
-            passwordChanged,
-            updatedAt: new Date().toISOString()
-        });
-        return;
-    }
-
-    await setDoc(doc(db, 'users', cleanMatrix), {
-        no_matriks: cleanMatrix,
-        passwordChanged,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    });
-}
-
 async function createStudentPasswordRequest(matrix) {
     const cleanMatrix = normalizeMatrix(matrix);
     const student = await getStudentByMatrixID(cleanMatrix);
@@ -706,12 +683,12 @@ setupAuthenticationHandlers({
     createStudentPasswordRequest, getStudentByMatrixID, normalizeMatrix,
     signupForm, signupError, signupErrorText, signupMatrixInput,
     signupPasswordInput, signupConfirmPasswordInput, STUDENT_BASE_PASSWORD,
-    createStudentAccount, setDoc, doc, saveStudentPassword, signOut,
+    createStudentAccount, setDoc, doc, signOut,
     changePasswordForm, changePasswordError, changePasswordErrorText,
     currentPasswordInput: document.getElementById('currentPassword'),
     newPasswordInput, confirmNewPasswordInput,
     reauthenticateWithCredential,
     EmailAuthProvider,
-    updatePassword, updateDoc, getDoc, db, showDashboard,
+    updatePassword, updateDoc, deleteField, getDoc, db, showDashboard,
     showScreen
 });

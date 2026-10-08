@@ -99,10 +99,10 @@ export function setupAuthenticationHandlers(deps) {
         createStudentPasswordRequest, getStudentByMatrixID, normalizeMatrix,
         signupForm, signupError, signupErrorText, signupMatrixInput,
         signupPasswordInput, signupConfirmPasswordInput, STUDENT_BASE_PASSWORD,
-        createStudentAccount, setDoc, doc, saveStudentPassword, signOut,
+        createStudentAccount, setDoc, doc, signOut,
         changePasswordForm, changePasswordError, changePasswordErrorText,
         currentPasswordInput, newPasswordInput, confirmNewPasswordInput,
-        reauthenticateWithCredential, EmailAuthProvider, updatePassword, updateDoc, getDoc, db,
+        reauthenticateWithCredential, EmailAuthProvider, updatePassword, updateDoc, deleteField, getDoc, db,
         showDashboard,
         showScreen
     } = deps;
@@ -243,7 +243,6 @@ signupForm?.addEventListener('submit', async (e) => {
             role: 'pelajar',
             passwordChanged: true
         });
-        await saveStudentPassword(matrix, true);
         await signOut(auth);
         state.isSigningUp = false;
         signupForm.reset();
@@ -373,7 +372,7 @@ changePasswordForm?.addEventListener('submit', async (event) => {
             userDoc = await getDoc(doc(db, 'users', auth.currentUser.email));
         }
         if (userDoc.exists()) {
-            await setDoc(userDoc.ref, passwordUpdate, { merge: true });
+            await updateDoc(userDoc.ref, { ...passwordUpdate, password: deleteField() });
         } else {
             await setDoc(doc(db, 'users', auth.currentUser.uid), {
                 email: auth.currentUser?.email || '',
@@ -382,9 +381,6 @@ changePasswordForm?.addEventListener('submit', async (event) => {
             }, { merge: true });
         }
 
-        if (state.currentRole === 'pelajar') {
-            await saveStudentPassword(state.currentUserData?.no_matriks || auth.currentUser?.email, true);
-        }
         state.currentUserData = state.currentUserData || {};
         state.currentUserData.passwordChanged = true;
         if (state.currentRole !== 'pelajar') state.currentUserData.staffPasswordSetup = true;

@@ -5,6 +5,13 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isUserOwner(userId) {
+      return isSignedIn() && (
+        request.auth.uid == userId ||
+        request.auth.token.email == userId
+      );
+    }
+
     function isStaffRole(roleName) {
       return roleName in ['admin', 'warden', 'ketua_warden', 'rollcall_admin', 'supervisor', 'hep'];
     }
@@ -23,13 +30,11 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow create: if isSignedIn() && request.auth.uid == userId;
-      allow read: if isSignedIn() && (
-        request.auth.uid == userId ||
-        isAdminOrWarden()
-      );
-      allow update: if isSignedIn() && (
-        request.auth.uid == userId ||
-        isAdminOrWarden()
+      allow read: if isUserOwner(userId) || isAdminOrWarden();
+      allow update: if isAdminOrWarden() || (
+        isUserOwner(userId) &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['password', 'passwordChanged', 'staffPasswordSetup', 'updatedAt'])
       );
       allow delete: if false;
     }

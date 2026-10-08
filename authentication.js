@@ -76,10 +76,7 @@ export function createAuthenticationService({
         }
 
         const needsStudentPasswordChange = state.currentRole === 'pelajar' && state.currentUserData?.passwordChanged !== true;
-        const needsStaffPasswordChange = state.currentRole !== 'pelajar'
-            && state.currentUserData?.staffPasswordSetup !== true
-            && state.currentUserData?.passwordChanged !== true;
-        if (needsStudentPasswordChange || needsStaffPasswordChange) {
+        if (needsStudentPasswordChange) {
             showScreen('changePasswordScreen');
             return;
         }

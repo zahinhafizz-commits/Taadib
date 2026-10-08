@@ -12,7 +12,7 @@ Cloud Functions deployment requires the project to use the Blaze billing plan. T
 
 ## Firestore rules
 
-Deploy Firestore rules after changing `firestore.rules` so authenticated users can access their own profile and update password metadata. Staff can sign in without first changing their password; students still need to change their initial password.
+Deploy Firestore rules after changing `firestore.rules` so authenticated users can access their own profile and update password metadata. Users can sign in without being forced to change their password; password changes remain available from the dashboard.
 
 ```sh
 firebase deploy --only firestore:rules --project system-fyp

@@ -75,11 +75,6 @@ export function createAuthenticationService({
             state.currentRole = fallbackRole;
         }
 
-        const needsStudentPasswordChange = state.currentRole === 'pelajar' && state.currentUserData?.passwordChanged !== true;
-        if (needsStudentPasswordChange) {
-            showScreen('changePasswordScreen');
-            return;
-        }
         showDashboard();
     });
 

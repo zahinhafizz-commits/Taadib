@@ -990,6 +990,7 @@ export function createPanelRouter(deps) {
         }
         await fetchStudentList();
         await fetchReportsData();
+        syncStudentMeritScores();
 
         const deptCounts = reportsData.reduce((acc, r) => {
             if (r.jabatan) {
@@ -1158,4 +1159,3 @@ export function createPanelRouter(deps) {
     }
     };
 }
-

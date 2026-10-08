@@ -16,7 +16,9 @@ function normalizeRole(role) {
     return 'pelajar';
 }
 
-exports.approveStudentPasswordReset = onCall(async (request) => {
+exports.approveStudentPasswordReset = onCall({
+    cors: ['https://taadib.kamsis-puo.workers.dev']
+}, async (request) => {
     if (!request.auth) {
         throw new HttpsError('unauthenticated', 'Log masuk diperlukan.');
     }

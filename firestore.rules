@@ -16,10 +16,18 @@ service cloud.firestore {
       return roleName in ['admin', 'warden', 'ketua_warden', 'rollcall_admin', 'supervisor', 'hep'];
     }
 
+    function hasStaffRole(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId)) &&
+        isStaffRole(get(/databases/$(database)/documents/users/$(userId)).data.role);
+    }
+
     function isAdminOrWarden() {
       return isSignedIn() && (
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        isStaffRole(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role)
+        hasStaffRole(request.auth.uid) ||
+        (
+          request.auth.token.email != null &&
+          hasStaffRole(request.auth.token.email)
+        )
       );
     }
 

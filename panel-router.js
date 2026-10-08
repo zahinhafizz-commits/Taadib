@@ -639,8 +639,19 @@ export function createPanelRouter(deps) {
             </div>
         `;
 
-        contentPanel.querySelector('#refreshResetRequestsBtn')?.addEventListener('click', () => {
-            loadPanelContent('resetPassword');
+        contentPanel.querySelector('#refreshResetRequestsBtn')?.addEventListener('click', async (event) => {
+            const button = event.currentTarget;
+            button.disabled = true;
+            try {
+                await loadPanelContent('resetPassword');
+            } catch (error) {
+                console.error('Password reset requests refresh failed:', error);
+                const message = error?.code === 'permission-denied'
+                    ? 'Akses ditolak. Pastikan akaun anda mempunyai peranan staf yang dibenarkan dan peraturan Firestore telah diterbitkan.'
+                    : error?.message || 'Ralat tidak diketahui. Sila cuba lagi.';
+                window.alert(`Gagal memuat semula permintaan reset: ${message}`);
+                button.disabled = false;
+            }
         });
 
         contentPanel.querySelectorAll('.approve-reset-btn')?.forEach(button => {

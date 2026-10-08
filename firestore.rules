@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isStaffRole(roleName) {
+      return roleName in ['admin', 'warden', 'ketua_warden', 'rollcall_admin', 'supervisor', 'hep'];
+    }
+
+    function isAdminOrWarden() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        isStaffRole(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role)
+      );
+    }
+
+    match /students/{studentId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminOrWarden();
+    }
+
+    match /users/{userId} {
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId ||
+        isAdminOrWarden()
+      );
+      allow update: if isSignedIn() && (
+        request.auth.uid == userId ||
+        isAdminOrWarden()
+      );
+      allow delete: if false;
+    }
+
+    match /password_reset_requests/{requestId} {
+      allow create: if true;
+      allow read: if isAdminOrWarden();
+      allow update: if isAdminOrWarden();
+      allow delete: if false;
+    }
+
+    match /laporan/{reportId} {
+      allow create: if isSignedIn();
+      allow read: if isSignedIn();
+      allow update, delete: if isAdminOrWarden();
+    }
+  }
+}
